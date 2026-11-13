@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tính toán nước súc xả & thất thoát</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --primary-light: #3b82f6;
+            --secondary: #0ea5e9;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --radius-lg: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+			align-items:flex-start;   /* ⬅ ĐƯA LÊN TRÊN */
+            padding-top:2px;         /* ⬅ CHỪA KHOẢNG CÁCH TRÊN */
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            margin-bottom: 2px;
+        }
+
+.card-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    padding: 8px 5px 8px; /* trên | trái-phải | dưới */
+    text-align: center;
+}
+
+
+        .card-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin: 0;
+        }
+
+        .card-body {
+            padding: 8px;
+        }
+
+        /* Mode Selection */
+        .mode-selector {
+            display: flex;
+			justify-content: center;   /* ⬅ căn giữa 2 box */
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;                 /* ⬅ khoảng cách giữa 2 box */
+            margin-bottom: 6px;
+        }
+
+        .mode-option {
+            position: relative;
+            cursor: pointer;
+			display: flex;
+        }
+
+        .mode-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+.mode-card {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 10px 12px;
+    text-align: center;
+
+    width: 280px;          /* ⬅ KÍCH THƯỚC CỐ ĐỊNH */
+    height: 50px;          /* ⬅ ÉP CHIỀU CAO */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    transition: all 0.25s ease;
+}
+
+
+        .mode-card:hover {
+            border-color: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+.mode-option input[type="radio"]:checked + .mode-card {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    box-shadow: var(--shadow-md);
+    transform: none;   /* ⬅ QUAN TRỌNG: không nhảy */
+}
+
+
+        .mode-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 2px;
+    line-height: 1.2;
+}
+
+.mode-subtitle {
+    font-size: 12.5px;
+    line-height: 1.2;
+}
+
+
+        /* Divider */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 5px 0;
+        }
+
+        /* Form Section */
+        .form-section {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 2px;
+            padding-bottom: 1px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        /* Sub-mode Selector */
+        .sub-mode-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 2px;
+            margin-bottom: 5px;
+        }
+
+        .sub-mode-option {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .sub-mode-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .sub-mode-card {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 2px;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .sub-mode-card:hover {
+            border-color: var(--primary-light);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .sub-mode-option input[type="radio"]:checked + .sub-mode-card {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            box-shadow: var(--shadow-md);
+        }
+
+        .sub-mode-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .sub-mode-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Input Group */
+        .input-group {
+            margin-bottom: 2px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 5px 2px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 15px;
+            transition: all 0.2s ease;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .input-group input:hover {
+            border-color: var(--primary-light);
+        }
+
+        /* Input Group Grid */
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2px;
+        }
+
+        /* Button */
+        .btn {
+            width: 100%;
+            padding: 7px 2px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-md);
+            margin-top: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Result */
+        .result {
+            display: none;
+            margin-top: 2px;
+            padding: 2px 2px;
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border-left: 4px solid var(--success);
+            border-radius: var(--radius);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .result-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--success);
+            margin-bottom: 2px;
+        }
+
+        .result-content {
+            font-size: 15px;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        .result-item {
+            padding: 2px 0;
+            border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: inline-block;
+            min-width: 140px;
+        }
+
+        .result-value {
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 2px;
+            }
+
+            .card-body {
+                padding: 2px 2px;
+            }
+
+            .card-header {
+                padding: 2px 2px;
+            }
+
+            .card-header h1 {
+                font-size: 20px;
+            }
+
+            .mode-selector,
+            .sub-mode-selector {
+                grid-template-columns: 1fr;
+            }
+
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+			.mode-card {
+    width: 100%;
+    max-width: 320px;
+    height: 74px;
+}
+
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+		/* ===== CẢNH BÁO VẬN TỐC ===== */
+.velocity-warning{
+    margin-top:6px;
+    padding:6px 8px;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:600;
+}
+
+.velocity-safe{
+    background:#ecfdf5;
+    color:#047857;
+    border-left:4px solid #10b981;
+}
+
+.velocity-caution{
+    background:#fff7ed;
+    color:#b45309;
+    border-left:4px solid #f59e0b;
+}
+
+.velocity-danger{
+    background:#fef2f2;
+    color:#b91c1c;
+    border-left:4px solid #ef4444;
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h1>🌊📉 TÍNH TOÁN NƯỚC</h1>
+            </div>
+            <div class="card-body">
+                <!-- Mode Selection -->
+                <div class="mode-selector">
+                    <label class="mode-option">
+                        <input type="radio" name="mainMode" value="flush" checked onchange="switchMain()">
+                        <div class="mode-card">
+                            <div class="mode-title">🚿📉 TÍNH NƯỚC SÚC XẢ</div>
+                            <div class="mode-subtitle">Nghiệm thu đường ống</div>
+                        </div>
+                    </label>
+                    <label class="mode-option">
+                        <input type="radio" name="mainMode" value="loss" onchange="switchMain()">
+                        <div class="mode-card">
+                            <div class="mode-title">🚰💧 DỰ BÁO NƯỚC THẤT THOÁT</div>
+                            <div class="mode-subtitle">Sự cố rò rỉ – vỡ ống</div>
+                        </div>
+                    </label>
+					<label class="mode-option">
+    <input type="radio" name="mainMode" value="test" onchange="switchMain()">
+    <div class="mode-card">
+        <div class="mode-title">🧪💦 TÍNH NƯỚC THỬ ÁP</div>
+        <div class="mode-subtitle">Kiểm tra áp lực thủy tĩnh</div>
+    </div>
+</label>
+
+					
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Flush Section -->
+                <div id="flushBox" class="form-section active">
+                    <div class="section-title">Tính nước súc xả nghiệm thu</div>
+                    
+                    <div class="sub-mode-selector">
+                        <label class="sub-mode-option">
+                            <input type="radio" name="flushMode" value="pressure" checked onchange="switchFlush()">
+                            <div class="sub-mode-card">
+                                <div class="sub-mode-title">🧯 THEO ÁP LỰC</div>
+                                <div class="sub-mode-subtitle">Vận tốc – lưu lượng</div>
+                            </div>
+                        </label>
+                        <label class="sub-mode-option">
+                            <input type="radio" name="flushMode" value="volume" onchange="switchFlush()">
+                            <div class="sub-mode-card">
+                                <div class="sub-mode-title">🪣 THEO THỂ TÍCH</div>
+                                <div class="sub-mode-subtitle">Số lần thay nước</div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="f_dia">Đường kính ống (mm)</label>
+                        <input type="number" id="f_dia" value="150" min="0" step="0.1">
+                    </div>
+
+                    <!-- Pressure Mode -->
+                    <div id="pressureBox">
+                        <div class="input-grid">
+                            <div class="input-group">
+                                <label for="f_pres">Áp lực tại điểm xả (bar)</label>
+                                <input type="number" id="f_pres" value="2" min="0" step="0.1">
+                            </div>
+                            <div class="input-group">
+                                <label for="f_cd">Hệ số xả Cd</label>
+                                <input type="number" id="f_cd" value="0.65" min="0" max="1" step="0.05">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="f_time">Thời gian xả (phút)</label>
+                            <input type="number" id="f_time" value="30" min="0" step="0.1">
+                        </div>
+                    </div>
+
+                    <!-- Volume Mode -->
+                    <div id="volumeBox" class="hidden">
+                        <div class="input-grid">
+                            <div class="input-group">
+                                <label for="f_length">Chiều dài tuyến ống (m)</label>
+                                <input type="number" id="f_length" value="500" min="0" step="0.1">
+                            </div>
+                            <div class="input-group">
+                                <label for="f_times">Số lần thay nước (lần)</label>
+                                <input type="number" id="f_times" value="3" min="1" step="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn" onclick="calcFlush()">TÍNH SÚC XẢ</button>
+                </div>
+
+                <!-- Loss Section -->
+                <div id="lossBox" class="form-section">
+                    <div class="section-title">Dự báo nước thất thoát</div>
+                    
+                    <div class="input-grid">
+                        <div class="input-group">
+                            <label for="l_dia">Đường kính lỗ vỡ (mm)</label>
+                            <input type="number" id="l_dia" value="10" min="0" step="0.1">
+                        </div>
+                        <div class="input-group">
+                            <label for="l_pres">Áp suất tại điểm vỡ (bar)</label>
+                            <input type="number" id="l_pres" value="2" min="0" step="0.1">
+                        </div>
+                    </div>
+
+                    <button class="btn" onclick="calcLoss()">TÍNH THẤT THOÁT</button>
+                </div>
+				<!-- Test Pressure Section -->
+<div id="testBox" class="form-section">
+    <div class="section-title">Tính nước thử áp lực thủy tĩnh</div>
+
+    <div class="input-grid">
+        <div class="input-group">
+            <label for="t_dia">Đường kính danh định ống DN (mm)</label>
+            <input type="number" id="t_dia" value="150" min="0" step="1">
+        </div>
+
+        <div class="input-group">
+            <label for="t_len">Chiều dài tuyến ống (m)</label>
+            <input type="number" id="t_len" value="500" min="0" step="1">
+        </div>
+
+        <div class="input-group">
+            <label for="t_k">Hệ số dự phòng k</label>
+            <input type="number" id="t_k" value="1.5" min="1" step="0.1">
+        </div>
+    </div>
+
+    <button class="btn" onclick="calcTestPressure()">TÍNH NƯỚC THỬ ÁP</button>
+</div>
+
+
+                <!-- Result -->
+                <div id="res" class="result"></div>
+									
+            </div>
+        </div>
+    </div>
+	
+
+    <script>
+function switchMain() {
+    let mode = document.querySelector('input[name="mainMode"]:checked').value;
+
+    document.getElementById('flushBox').classList.toggle('active', mode === 'flush');
+    document.getElementById('lossBox').classList.toggle('active', mode === 'loss');
+    document.getElementById('testBox').classList.toggle('active', mode === 'test');
+
+    document.getElementById('res').classList.remove('show');
+    document.getElementById('res').innerHTML = '';
+}
+
+
+        function switchFlush() {
+            let mode = document.querySelector('input[name="flushMode"]:checked').value;
+            document.getElementById('pressureBox').classList.toggle('hidden', mode !== 'pressure');
+            document.getElementById('volumeBox').classList.toggle('hidden', mode !== 'volume');
+        }
+
+        /* ===== TÍNH SÚC XẢ ===== */
+        function calcFlush() {
+            let D = document.getElementById('f_dia').value / 1000;
+            let A = Math.PI * D * D / 4;
+            let g = 9.81;
+            let mode = document.querySelector('input[name="flushMode"]:checked').value;
+            let html = "";
+
+            if (mode === "pressure") {
+                let p = document.getElementById('f_pres').value;
+                let Cd = document.getElementById('f_cd').value;
+                let T = document.getElementById('f_time').value / 60;
+
+                let H = p * 10.197;
+                let v = Cd * Math.sqrt(2 * g * H);
+                let Q = A * v * 3600;
+                let V = Q * T;
+
+let warningHTML = "";
+
+if(v < 4){
+    warningHTML =
+        `<div class="velocity-warning velocity-safe">
+            🟢 Vận tốc xả an toàn – phù hợp súc rửa đường ống.
+        </div>`;
+}
+else if(v < 6){
+    warningHTML =
+        `<div class="velocity-warning velocity-caution">
+            🟡 Vận tốc xả khá cao – chỉ nên xả trong thời gian ngắn.
+        </div>`;
+}
+else{
+    warningHTML =
+        `<div class="velocity-warning velocity-danger">
+            🔴 Vận tốc xả RẤT CAO (${v.toFixed(2)} m/s) – không khuyến nghị.<br>
+            Nguy cơ ăn mòn ống, rung, va đập thủy lực.
+        </div>`;
+}
+
+html =
+    `<div class="result-title">📊 Kết quả tính toán (Theo áp lực)</div>` +
+    `<div class="result-content">` +
+    `<div class="result-item"><span class="result-label">Vận tốc xả:</span><span class="result-value">${v.toFixed(2)} m/s</span></div>` +
+    warningHTML +
+    `<div class="result-item"><span class="result-label">Lưu lượng:</span><span class="result-value">${Q.toFixed(2)} m³/giờ</span></div>` +
+    `<div class="result-item"><span class="result-label">Thời gian xả:</span><span class="result-value">${(T*60).toFixed(0)} phút</span></div>` +
+    `<div class="result-item"><span class="result-label">Tổng nước xả:</span><span class="result-value">${V.toFixed(2)} m³ (${(V*1000).toLocaleString('vi-VN')} lít)</span></div>` +
+    `</div>`;
+
+            } else {
+                let L = document.getElementById('f_length').value;
+                let n = document.getElementById('f_times').value;
+
+                let Vpipe = A * L;
+                let V = Vpipe * n;
+
+                html =
+                    `<div class="result-title">📊 Kết quả tính toán (Theo thể tích)</div>` +
+                    `<div class="result-content">` +
+                    `<div class="result-item"><span class="result-label">Thể tích ống:</span><span class="result-value">${Vpipe.toFixed(2)} m³</span></div>` +
+                    `<div class="result-item"><span class="result-label">Số lần thay nước:</span><span class="result-value">${n} lần</span></div>` +
+                    `<div class="result-item"><span class="result-label">Tổng nước xả:</span><span class="result-value">${V.toFixed(2)} m³ (${(V*1000).toLocaleString('vi-VN')} lít)</span></div>` +
+                    `</div>`;
+            }
+
+            document.getElementById('res').innerHTML = html;
+            document.getElementById('res').classList.add('show');
+        }
+
+        /* ===== TÍNH THẤT THOÁT ===== */
+        function calcLoss() {
+            let d = document.getElementById('l_dia').value / 1000;
+            let p = document.getElementById('l_pres').value;
+            let h = p * 10.197;
+            let cd = 0.62;
+            let g = 9.81;
+
+            let A = Math.PI * d * d / 4;
+            let v = Math.sqrt(2 * g * h);
+            let q = A * cd * v * 3600;
+
+            let html =
+                `<div class="result-title">⚠️ Nước thất thoát dự kiến</div>` +
+                `<div class="result-content">` +
+                `<div class="result-item"><span class="result-label">Lưu lượng thất thoát:</span><span class="result-value">${q.toFixed(2)} m³/giờ</span></div>` +
+                `<div class="result-item"><span class="result-label">Lưu lượng thất thoát:</span><span class="result-value">${(q*1000).toLocaleString('vi-VN')} lít/giờ</span></div>` +
+                `</div>`;
+
+            document.getElementById('res').innerHTML = html;
+            document.getElementById('res').classList.add('show');
+        }
+		/* ===== TÍNH NƯỚC THỬ ÁP ===== */
+function calcTestPressure(){
+    let D = document.getElementById('t_dia').value / 1000; // m
+    let L = document.getElementById('t_len').value;
+    let k = document.getElementById('t_k').value;
+
+    let A = Math.PI * D * D / 4;
+    let Vpipe = A * L;
+    let V = Vpipe * k;
+
+    let html =
+        `<div class="result-title">🧪 Kết quả tính nước thử áp</div>` +
+        `<div class="result-content">` +
+        `<div class="result-item"><span class="result-label">Thể tích hình học ống:</span><span class="result-value">${Vpipe.toFixed(2)} m³</span></div>` +
+        `<div class="result-item"><span class="result-label">Hệ số dự phòng k:</span><span class="result-value">${k}</span></div>` +
+        `<div class="result-item"><span class="result-label">Lượng nước cần chuẩn bị:</span><span class="result-value">${V.toFixed(2)} m³ (${(V*1000).toLocaleString('vi-VN')} lít)</span></div>` +
+        `<div class="velocity-warning velocity-safe">
+            ℹ️ Công thức: Q = k × (πD²/4) × L<br>
+            k : là hệ số dự phòng khi tính lượng nước phục vụ công tác thử áp.
+(Hệ số này dùng để kể đến lượng nước bổ sung trong quá trình: Nạp đầy đường ống, Tăng áp và giữ áp, Xả khí trong ống, Bù nước do rò rỉ nhỏ tại các mối nối)
+
+        </div>` +
+        `</div>`;
+
+    document.getElementById('res').innerHTML = html;
+    document.getElementById('res').classList.add('show');
+}
+
+    </script>
+</body>
+</html>
+

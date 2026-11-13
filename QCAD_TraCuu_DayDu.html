@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Tra cứu lệnh QCAD đầy đủ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif; 
+            max-width: 1100px; 
+            margin: 40px auto;
+            padding: 0 20px;
+            background-color: #f8fafc;
+        }
+        h2 {
+            color: #1e293b;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+        .search-wrapper {
+            display: flex;
+            gap: 25px;
+        }
+        .search-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .column-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #475569;
+            margin-bottom: 8px;
+        }
+        input {
+            width: 100%; 
+            padding: 14px; 
+            box-sizing: border-box; 
+            font-size: 16px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        #searchKey:focus { border-color: #2563eb; }
+        #searchName:focus { border-color: #0d9488; }
+        .list-container {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-top: 5px;
+            max-height: 320px;
+            overflow-y: auto;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 10;
+        }
+        .item {
+            padding: 11px 12px; 
+            cursor: pointer; 
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+        .item:last-child { border-bottom: none; }
+        .item:hover { background: #f1f5f9; }
+        .item-key {
+            font-weight: bold;
+            color: #2563eb;
+            background: #eff6ff;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        .item-name {
+            flex: 1;
+            color: #334155;
+            font-size: 14px;
+        }
+        .item-cat {
+            font-size: 11px;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+        #result {
+            margin-top: 40px; 
+            padding: 20px; 
+            background: #eff6ff; 
+            border-left: 5px solid #2563eb;
+            border-radius: 4px;
+            display: none;
+        }
+        #result p {
+            margin: 8px 0;
+            font-size: 16px;
+            color: #334155;
+        }
+        .count {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 13px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+<h2>Tra cứu nhanh lệnh QCAD</h2>
+<div class="subtitle">Đầy đủ toàn bộ phím tắt từ bảng QCAD Shortcuts (3 trang)</div>
+
+<div class="search-wrapper">
+    <div class="search-column">
+        <div class="column-title">🔍 TÌM THEO PHÍM TẮT (KEY ONLY):</div>
+        <input id="searchKey" placeholder="Gõ phím tắt: li, po, mv, ctrl..." autocomplete="off">
+        <div id="listKey" class="list-container"></div>
+    </div>
+    <div class="search-column">
+        <div class="column-title">📝 TÌM THEO TÁC DỤNG (NAME ONLY):</div>
+        <input id="searchName" placeholder="Gõ tác dụng: vẽ, đo, đường thẳng, xoay..." autocomplete="off">
+        <div id="listName" class="list-container"></div>
+    </div>
+</div>
+
+<div id="result"></div>
+<div class="count" id="totalCount"></div>
+
+<script>
+const commands = [
+  // ========== FILE ==========
+  {key:"Ctrl+N / N",name:"Tạo bản vẽ mới (New)",category:"Quản lý Tệp (File)"},
+  {key:"Ctrl+T / T",name:"Tạo bản vẽ mới dự phòng (New Alternative)",category:"Quản lý Tệp (File)"},
+  {key:"Ctrl+O / O",name:"Mở bản vẽ có sẵn trên máy (Open)",category:"Quản lý Tệp (File)"},
+  {key:"Ctrl+Shift+I / I",name:"Chèn, nhập thêm file khác vào bản vẽ (Import)",category:"Quản lý Tệp (File)"},
+  {key:"Ctrl+S / S",name:"Lưu bản vẽ hiện tại (Save)",category:"Quản lý Tệp (File)"},
+  {key:"Ctrl+Shift+S / S",name:"Lưu thành một tệp mới khác (Save As)",category:"Quản lý Tệp (File)"},
+  {key:"Ctrl+W / W",name:"Đóng bản vẽ đang mở (Close)",category:"Quản lý Tệp (File)"},
+  {key:"XB",name:"Xuất bản vẽ ra định dạng file ảnh (Bitmap Export)",category:"Quản lý Tệp (File)"},
+  {key:"XD",name:"Xuất bản vẽ ra định dạng file tài liệu PDF (PDF Export)",category:"Quản lý Tệp (File)"},
+  {key:"Ctrl+Shift+P / P",name:"Xem trước bố cục trang in (Print Preview)",category:"Quản lý Tệp (File)"},
+  {key:"Ctrl+P / P",name:"Thiết lập cấu hình và In bản vẽ (Print)",category:"Quản lý Tệp (File)"},
+  {key:"Ctrl+Alt+P / P",name:"In nhanh góc màn hình đang xem (Print Current View)",category:"Quản lý Tệp (File)"},
+  {key:"Ctrl+Q / Q",name:"Thoát hoàn toàn phần mềm QCAD (Quit)",category:"Quản lý Tệp (File)"},
+
+  // ========== VIEW - ZOOM ==========
+  {key:"Ctrl++ / + =",name:"Phóng to màn hình nhìn rõ hơn (Zoom In)",category:"Góc Nhìn - Thu Phóng"},
+  {key:"Ctrl+- / -",name:"Thu nhỏ màn hình nhìn tổng quan (Zoom Out)",category:"Góc Nhìn - Thu Phóng"},
+  {key:"ZA",name:"Tự động thu phóng vừa vặn toàn bộ bản vẽ (Auto Zoom)",category:"Góc Nhìn - Thu Phóng"},
+  {key:"ZS",name:"Phóng to riêng vùng đối tượng đang chọn (Zoom Selection)",category:"Góc Nhìn - Thu Phóng"},
+  {key:"ZV",name:"Quay lại góc nhìn vừa xem trước đó (Previous View)",category:"Góc Nhìn - Thu Phóng"},
+  {key:"ZW",name:"Phóng to ô vuông do bạn quét chuột chọn (Window Zoom)",category:"Góc Nhìn - Thu Phóng"},
+  {key:"ZP",name:"Kéo rê dịch chuyển vùng nhìn màn hình (Pan Zoom)",category:"Góc Nhìn - Thu Phóng"},
+
+  // ========== VIEW - DISPLAY ==========
+  {key:"DF",name:"Bật/Tắt chế độ vẽ nháp tối giản nét (Draft Mode)",category:"Góc Nhìn - Hiển Thị"},
+  {key:"NL",name:"Bật/Tắt độ dày nét vẽ trên màn hình (Screen-based Linetypes)",category:"Góc Nhìn - Hiển Thị"},
+  {key:"NT",name:"Bật/Tắt chế độ làm mịn, khử răng cưa nét vẽ (Anti-aliasing)",category:"Góc Nhìn - Hiển Thị"},
+  {key:"GR",name:"Bật/Tắt hiển thị lưới tọa độ nền (Grid)",category:"Góc Nhìn - Hiển Thị"},
+  {key:"JO",name:"Tắt chế độ lưới hình chiếu trục đo (Isometric Grid Off)",category:"Góc Nhìn - Hiển Thị"},
+  {key:"JT",name:"Chuyển sang góc nhìn từ trên xuống (Top Projection)",category:"Góc Nhìn - Hiển Thị"},
+  {key:"JR",name:"Chuyển sang góc nhìn từ bên phải (Right Projection)",category:"Góc Nhìn - Hiển Thị"},
+  {key:"JL",name:"Chuyển sang góc nhìn từ bên trái (Left Projection)",category:"Góc Nhìn - Hiển Thị"},
+  {key:"GY",name:"Bật/Tắt thanh quản lý danh sách Lớp (Layer List)",category:"Góc Nhìn - Hiển Thị"},
+  {key:"GB",name:"Bật/Tắt thanh quản lý danh sách Khối (Block List)",category:"Góc Nhìn - Hiển Thị"},
+  {key:"GP",name:"Bật/Tắt bảng chỉnh sửa thuộc tính nhanh (Property Editor)",category:"Góc Nhìn - Hiển Thị"},
+  {key:"GM",name:"Bật/Tắt dòng gõ nhập lệnh (Command Line)",category:"Góc Nhìn - Hiển Thị"},
+  {key:"GS",name:"Bật/Tắt thanh trạng thái dưới đáy màn hình (Status Bar)",category:"Góc Nhìn - Hiển Thị"},
+  {key:"Space",name:"Nhấp nhanh con trỏ vào ô nhập lệnh nhanh (Focus on Command Line)",category:"Góc Nhìn - Hiển Thị"},
+  {key:"Ctrl+Shift+.",name:"Nhấp nhanh vào khu vực bảng công cụ chọn (Focus on Tool Matrix)",category:"Góc Nhìn - Hiển Thị"},
+  {key:"F8",name:"Hiển thị/Ẩn số liệu góc và khoảng cách con trỏ (Display Distance/Angle)",category:"Góc Nhìn - Hiển Thị"},
+
+  // ========== EDIT ==========
+  {key:"Ctrl+Z / Z",name:"Hủy thao tác sai vừa thực hiện, quay lại (Undo)",category:"Chỉnh Sửa (Edit)"},
+  {key:"Ctrl+Shift+Z / Z",name:"Làm lại thao tác vừa hủy bỏ (Redo)",category:"Chỉnh Sửa (Edit)"},
+  {key:"Del / Backspace",name:"Xóa bỏ các đối tượng đang chọn (Delete)",category:"Chỉnh Sửa (Edit)"},
+  {key:"Ctrl+X / X",name:"Cắt bỏ đối tượng để dán chỗ khác (Cut)",category:"Chỉnh Sửa (Edit)"},
+  {key:"Ctrl+Shift+X / X",name:"Cắt đối tượng kèm chọn điểm gốc cố định (Cut with Reference)",category:"Chỉnh Sửa (Edit)"},
+  {key:"Ctrl+C / C",name:"Sao chép copy đối tượng (Copy)",category:"Chỉnh Sửa (Edit)"},
+  {key:"Ctrl+Shift+C / C",name:"Sao chép đối tượng kèm chọn điểm gốc cố định (Copy with Reference)",category:"Chỉnh Sửa (Edit)"},
+  {key:"Ctrl+V / V",name:"Dán đối tượng đã sao chép/cắt ra bản vẽ (Paste)",category:"Chỉnh Sửa (Edit)"},
+  {key:"DP",name:"Nhân bản đối tượng copy đè tại chỗ (Duplicate)",category:"Chỉnh Sửa (Edit)"},
+  {key:"CU",name:"Chuyển đổi nhanh đơn vị đo của bản vẽ (Convert Drawing Unit)",category:"Chỉnh Sửa (Edit)"},
+  {key:"Esc / QQ",name:"Thoát lệnh đang chạy, đưa chuột về chế độ chờ (Escape / Reset)",category:"Chỉnh Sửa (Edit)"},
+  {key:"Ctrl+1",name:"Mở bảng tùy chỉnh chuyên sâu cho bản vẽ này (Drawing Preferences)",category:"Chỉnh Sửa (Edit)"},
+  {key:"Ctrl+,",name:"Mở cài đặt thiết lập hệ thống cho phần mềm QCAD (Application Preferences)",category:"Chỉnh Sửa (Edit)"},
+
+  // ========== SELECT ==========
+  {key:"TN / Ctrl+K",name:"Bỏ chọn toàn bộ đối tượng trên bản vẽ (Deselect All)",category:"Chọn Đối Tượng"},
+  {key:"TA / Ctrl+A",name:"Chọn tất cả mọi thứ có trên bản vẽ (Select All)",category:"Chọn Đối Tượng"},
+  {key:"TI",name:"Đảo ngược vùng chọn đối tượng (Invert Selection)",category:"Chọn Đối Tượng"},
+  {key:"TR | TW",name:"Quét ô vuông để chọn hoặc bỏ chọn vùng đối tượng (Select Rectangular Area)",category:"Chọn Đối Tượng"},
+  {key:"TC",name:"Chọn toàn bộ đường viền kín bao quanh đối tượng (Select Contour)",category:"Chọn Đối Tượng"},
+  {key:"TX",name:"Chọn mọi đối tượng có đường quét đi qua (Select Intersected Entities)",category:"Chọn Đối Tượng"},
+  {key:"TL",name:"Chọn nhanh tất cả đối tượng thuộc cùng một lớp (Select Layer)",category:"Chọn Đối Tượng"},
+  {key:"TH",name:"Chọn đối tượng bằng cách nhập mã định danh (By Handle)",category:"Chọn Mở Rộng"},
+  {key:"TF",name:"Chọn nhanh toàn bộ đối tượng có cùng màu sắc (By Color)",category:"Chọn Mở Rộng"},
+
+  // ========== INFO ==========
+  {key:"IO",name:"Đo xem tọa độ tuyệt đối của điểm hiện tại (Position)",category:"Đo Đạc Số Liệu"},
+  {key:"IV",name:"Đo xem tọa độ tương đối từ điểm trước đó (Relative Position)",category:"Đo Đạc Số Liệu"},
+  {key:"IL",name:"Đo xem tọa độ cực bao gồm góc và khoảng cách (Polar Position)",category:"Đo Đạc Số Liệu"},
+  {key:"IT",name:"Đo xem tọa độ cực ở trạng thái tương đối (Relative Polar Position)",category:"Đo Đạc Số Liệu"},
+  {key:"IP",name:"Đo khoảng cách chính xác từ điểm này đến điểm kia (Distance Point to Point)",category:"Đo Đạc Số Liệu"},
+  {key:"IE",name:"Đo khoảng cách từ một đường thẳng tới một điểm (Distance Entity to Point)",category:"Đo Đạc Số Liệu"},
+  {key:"IN",name:"Đo khoảng cách song song giữa hai đường thẳng (Distance Entity to Entity)",category:"Đo Đạc Số Liệu"},
+  {key:"IA",name:"Đo độ lớn góc tạo bởi hai đường thẳng giao nhau (Angle)",category:"Đo Đạc Số Liệu"},
+  {key:"IR",name:"Đo diện tích và chu vi hình đa giác (Polygonal Area)",category:"Đo Đạc Số Liệu"},
+  {key:"IC",name:"Đo diện tích hình đặc biệt Cung / Tròn / Elip (Arc/Circle/Ellipse Area)",category:"Đo Đạc Số Liệu"},
+
+  // ========== DRAW - POINT ==========
+  {key:"PO",name:"Vẽ một điểm đơn lẻ (Single Point)",category:"Vẽ - Điểm"},
+
+  // ========== DRAW - LINE ==========
+  {key:"LI",name:"Vẽ đường thẳng đi qua 2 điểm (Line from 2 Points)",category:"Vẽ - Đường thẳng"},
+  {key:"LA",name:"Vẽ đường thẳng theo góc cho trước (Line from Angle)",category:"Vẽ - Đường thẳng"},
+  {key:"LH",name:"Vẽ đường thẳng nằm ngang (Horizontal Line)",category:"Vẽ - Đường thẳng"},
+  {key:"LV",name:"Vẽ đường thẳng đứng (Vertical Line)",category:"Vẽ - Đường thẳng"},
+  {key:"LB",name:"Vẽ đường phân giác của một góc (Angle Bisector)",category:"Vẽ - Đường thẳng"},
+  {key:"LP | PA",name:"Vẽ đường song song (Nhập khoảng cách) (Parallel with Distance)",category:"Vẽ - Đường thẳng"},
+  {key:"LG",name:"Vẽ đường song song đi qua một điểm (Parallel through Point)",category:"Vẽ - Đường thẳng"},
+  {key:"LT1",name:"Vẽ đường tiếp tuyến từ 1 điểm đến hình tròn (Tangent Point Circle)",category:"Vẽ - Đường thẳng"},
+  {key:"LT2",name:"Vẽ đường tiếp tuyến chung của 2 hình tròn (Tangent Two Circles)",category:"Vẽ - Đường thẳng"},
+  {key:"LN",name:"Vẽ đường vuông góc hoặc tiếp tuyến từ đối tượng (Orthogonal / Tangent)",category:"Vẽ - Đường thẳng"},
+  {key:"LR",name:"Vẽ đường thẳng theo góc tương đối (Relative Angle)",category:"Vẽ - Đường thẳng"},
+  {key:"LO",name:"Vẽ đường thẳng vuông góc (Orthogonal)",category:"Vẽ - Đường thẳng"},
+  {key:"LF",name:"Vẽ đường tự do bằng tay (Freehand Line)",category:"Vẽ - Đường thẳng"},
+
+  // ========== DRAW - SPLINE ==========
+  {key:"SP",name:"Vẽ đường cong Spline theo điểm điều khiển (Spline Control Points)",category:"Vẽ - Spline"},
+
+  // ========== DRAW - MISC ==========
+  {key:"XH",name:"Vẽ đường xây dựng nằm ngang (Horizontal Construction Line)",category:"Vẽ - Khác"},
+  {key:"XV",name:"Vẽ đường xây dựng đứng (Vertical Construction Line)",category:"Vẽ - Khác"},
+  {key:"CS",name:"Vẽ đường tâm chữ thập (Centerline Cross)",category:"Vẽ - Khác"},
+  {key:"C12",name:"Chèn bộ đếm tự động (Counter)",category:"Vẽ - Khác"},
+  {key:"TG",name:"Viết chữ dọc theo một đối tượng (Text Along Entity)",category:"Vẽ - Khác"},
+  {key:"2T",name:"Vẽ mũi tên chữ căn chỉnh (Text Aligned Leader)",category:"Vẽ - Khác"},
+  {key:"T2L",name:"Vẽ mũi tên từ chữ đã chọn (Leader from Selected Text)",category:"Vẽ - Khác"},
+  {key:"LJ",name:"Vẽ khớp hộp từ 2 điểm (Box Joint from 2 Points)",category:"Vẽ - Khác"},
+  {key:"S3",name:"Vẽ ký hiệu ngắt đường từ 2 điểm (Polyline break symbol)",category:"Vẽ - Khác"},
+  {key:"PF",name:"Vẽ làn đường FMS (Draw Fms Lanes)",category:"Vẽ - Khác"},
+
+  // ========== DRAW - ARC ==========
+  {key:"AR",name:"Vẽ cung tròn từ tâm, điểm và góc (Center Point Angles)",category:"Vẽ - Cung"},
+  {key:"AD",name:"Vẽ cung tròn từ 2 điểm và bán kính (2 Points and Radius)",category:"Vẽ - Cung"},
+  {key:"A2",name:"Vẽ cung tròn từ 2 điểm và góc (2 Points and Angle)",category:"Vẽ - Cung"},
+  {key:"AL",name:"Vẽ cung tròn từ 2 điểm và chiều dài (2 Points and Length)",category:"Vẽ - Cung"},
+  {key:"AH",name:"Vẽ cung tròn từ 2 điểm và chiều cao (2 Points and Height)",category:"Vẽ - Cung"},
+  {key:"A3",name:"Vẽ cung tròn từ 3 điểm (3 Points)",category:"Vẽ - Cung"},
+  {key:"AC",name:"Vẽ cung đồng tâm theo khoảng cách (Concentric with Distance)",category:"Vẽ - Cung"},
+  {key:"AG",name:"Vẽ cung đồng tâm đi qua một điểm (Concentric through Point)",category:"Vẽ - Cung"},
+  {key:"AN",name:"Vẽ cung nối tiếp tuyến (Tangentially Connected)",category:"Vẽ - Cung"},
+  {key:"AT",name:"Vẽ cung từ tiếp tuyến, điểm và bán kính (Tangent Point Radius)",category:"Vẽ - Cung"},
+
+  // ========== DRAW - CIRCLE ==========
+  {key:"CI",name:"Vẽ hình tròn từ tâm và điểm trên chu vi (Center Point)",category:"Vẽ - Hình tròn"},
+  {key:"CR",name:"Vẽ hình tròn từ tâm và bán kính (Center Radius)",category:"Vẽ - Hình tròn"},
+  {key:"CA",name:"Vẽ hình tròn từ tâm và đường kính (Center Diameter)",category:"Vẽ - Hình tròn"},
+  {key:"CD",name:"Vẽ hình tròn từ 2 điểm và bán kính (2 Points and Radius)",category:"Vẽ - Hình tròn"},
+  {key:"C2",name:"Vẽ hình tròn từ 2 điểm (2 Points)",category:"Vẽ - Hình tròn"},
+  {key:"C3",name:"Vẽ hình tròn từ 3 điểm (3 Points)",category:"Vẽ - Hình tròn"},
+  {key:"CC",name:"Vẽ hình tròn đồng tâm theo khoảng cách (Concentric with Distance)",category:"Vẽ - Hình tròn"},
+  {key:"CG",name:"Vẽ hình tròn đồng tâm đi qua một điểm (Concentric through Point)",category:"Vẽ - Hình tròn"},
+  {key:"CT1",name:"Vẽ hình tròn tiếp tuyến và 2 điểm (Tangent and 2 Points)",category:"Vẽ - Hình tròn"},
+  {key:"CTP",name:"Vẽ hình tròn từ tiếp tuyến, điểm và bán kính (Tangent Point Radius)",category:"Vẽ - Hình tròn"},
+  {key:"CT2",name:"Vẽ hình tròn từ 2 tiếp tuyến và 1 điểm (2 Tangents and Point)",category:"Vẽ - Hình tròn"},
+  {key:"CTR",name:"Vẽ hình tròn từ 2 tiếp tuyến và bán kính (2 Tangents and Radius)",category:"Vẽ - Hình tròn"},
+  {key:"CT3",name:"Vẽ hình tròn từ 3 tiếp tuyến (3 Tangents)",category:"Vẽ - Hình tròn"},
+
+  // ========== DRAW - ELLIPSE ==========
+  {key:"EP",name:"Vẽ elip từ tâm, điểm và tỉ lệ (Ellipse Center Point Ratio)",category:"Vẽ - Elip"},
+  {key:"EA",name:"Vẽ cung elip (Ellipse Arc)",category:"Vẽ - Elip"},
+  {key:"E1",name:"Vẽ elip theo 2 bán kính (Ellipse with Radii)",category:"Vẽ - Elip"},
+  {key:"ED",name:"Vẽ elip theo 2 đường kính (Ellipse with Diameters)",category:"Vẽ - Elip"},
+  {key:"EC",name:"Vẽ đường cong song song theo khoảng cách (Parallel Curve with Distance)",category:"Vẽ - Elip"},
+  {key:"EG",name:"Vẽ đường cong song song đi qua một điểm (Parallel Curve through Point)",category:"Vẽ - Elip"},
+
+  // ========== DRAW - POLYLINE ==========
+  {key:"PL",name:"Vẽ đường polyline nhiều đoạn (Draw Polyline)",category:"Vẽ - Polyline"},
+
+  // ========== DRAW - TEXT & BITMAP ==========
+  {key:"TE",name:"Chèn văn bản vào bản vẽ (Text)",category:"Vẽ - Chữ & Ảnh"},
+  {key:"IM",name:"Chèn hình ảnh Bitmap vào bản vẽ (Insert Bitmap)",category:"Vẽ - Chữ & Ảnh"},
+
+  // ========== DRAW - SHAPE ==========
+  {key:"RE",name:"Vẽ hình chữ nhật (Rectangle)",category:"Vẽ - Hình dạng"},
+  {key:"RS",name:"Vẽ hình chữ nhật theo kích thước cho trước (Rectangle with Size)",category:"Vẽ - Hình dạng"},
+  {key:"PG1 | HC",name:"Vẽ đa giác từ tâm và góc (Polygon Center Corner)",category:"Vẽ - Hình dạng"},
+  {key:"PG2 | HP",name:"Vẽ đa giác từ 2 điểm của một cạnh (Polygon 2 Points of Side)",category:"Vẽ - Hình dạng"},
+  {key:"PG3",name:"Vẽ đa giác từ tâm và cạnh (Polygon Center Side)",category:"Vẽ - Hình dạng"},
+  {key:"PG4",name:"Vẽ đa giác từ cạnh và cạnh (Polygon Side Side)",category:"Vẽ - Hình dạng"},
+  {key:"HA",name:"Tạo vùng tô (hatch) từ đối tượng đã chọn (Hatch from Selection)",category:"Vẽ - Hình dạng"},
+
+  // ========== DIMENSION ==========
+  {key:"DA",name:"Ghi kích thước căn chỉnh theo đối tượng (Aligned Dimension)",category:"Kích thước (Dimension)"},
+  {key:"DL",name:"Ghi kích thước tuyến tính xoay (Rotated Linear Dimension)",category:"Kích thước (Dimension)"},
+  {key:"DH",name:"Ghi kích thước nằm ngang (Horizontal Dimension)",category:"Kích thước (Dimension)"},
+  {key:"DV",name:"Ghi kích thước thẳng đứng (Vertical Dimension)",category:"Kích thước (Dimension)"},
+  {key:"DO",name:"Ghi kích thước tọa độ X/Y (Ordinate Dimension)",category:"Kích thước (Dimension)"},
+  {key:"DE | LD",name:"Vẽ đường dẫn ghi chú (Leader)",category:"Kích thước (Dimension)"},
+  {key:"DR",name:"Ghi kích thước bán kính (Radial Dimension)",category:"Kích thước (Dimension)"},
+  {key:"DD",name:"Ghi kích thước đường kính (Diametric Dimension)",category:"Kích thước (Dimension)"},
+  {key:"DN",name:"Ghi kích thước góc (Angular Dimension)",category:"Kích thước (Dimension)"},
+  {key:"DS",name:"Đặt lại vị trí nhãn kích thước (Reset Label Position)",category:"Kích thước (Dimension)"},
+
+  // ========== MODIFY ==========
+  {key:"MV",name:"Di chuyển hoặc sao chép đối tượng (Move / Copy)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"RO",name:"Xoay đối tượng quanh một điểm (Rotate)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"SZ",name:"Phóng to / thu nhỏ đối tượng (Scale)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"MI",name:"Lật đối tượng qua một trục (Mirror)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"FH",name:"Lật ngang đối tượng (Flip Horizontal)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"FV",name:"Lật dọc đối tượng (Flip Vertical)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"MR",name:"Di chuyển và xoay đối tượng cùng lúc (Move and Rotate)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"R2",name:"Xoay hai đối tượng (Rotate Two)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"OF",name:"Tạo đường offset theo khoảng cách (Offset with Distance)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"OH",name:"Tạo đường offset đi qua một điểm (Offset through Point)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"RM | XT",name:"Cắt tỉa đối tượng đến điểm giao (Trim)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"TM",name:"Cắt tỉa cả hai đối tượng tại điểm giao (Trim Both)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"LE",name:"Kéo dài hoặc rút ngắn đối tượng (Lengthen / Shorten)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"SS",name:"Kéo giãn đối tượng (Stretch)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"CH",name:"Vát cạnh / tạo góc vát (Chamfer / Bevel)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"RN",name:"Bo tròn góc (Round / Fillet)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"DI",name:"Chia đối tượng thành nhiều phần (Divide)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"D2",name:"Cắt bỏ một đoạn giữa hai điểm (Break out Segment)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"B2",name:"Cắt bỏ đoạn thủ công (Break out Manual)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"AX",name:"Tự động cắt tỉa đối tượng (Auto Trim)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"D3",name:"Cắt bỏ tạo khoảng trống (Break out Gap)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"RV",name:"Đảo ngược chiều đối tượng (Reverse)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"MT",name:"Chỉnh sửa nội dung văn bản (Edit Text)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"MH",name:"Chỉnh sửa vùng tô hatch (Edit Hatch)",category:"Chỉnh sửa hình học (Modify)"},
+  {key:"XP",name:"Phân rã đối tượng phức tạp thành phần tử đơn (Explode)",category:"Chỉnh sửa hình học (Modify)"},
+
+  // ========== DRAW ORDER ==========
+  {key:"MF",name:"Đưa đối tượng lên lớp trên cùng (Bring to Front)",category:"Thứ tự hiển thị"},
+  {key:"MB",name:"Đưa đối tượng xuống lớp dưới cùng (Send to Back)",category:"Thứ tự hiển thị"},
+
+  // ========== PROJECTION ==========
+  {key:"PJ",name:"Chuyển sang hình chiếu trục đo (Isometric Projection)",category:"Hình chiếu"},
+
+  // ========== BLOCK ==========
+  {key:"BV",name:"Bật/Tắt hiển thị khối (Toggle Block Visibility)",category:"Khối (Block)"},
+  {key:"BS",name:"Hiện tất cả các khối (Show All Blocks)",category:"Khối (Block)"},
+  {key:"BH",name:"Ẩn tất cả các khối (Hide All Blocks)",category:"Khối (Block)"},
+  {key:"BA",name:"Thêm khối rỗng mới (Add Empty Block)",category:"Khối (Block)"},
+  {key:"BC",name:"Tạo khối từ các đối tượng đang chọn (Create Block from Selection)",category:"Khối (Block)"},
+  {key:"BR",name:"Xóa khối (Remove Block)",category:"Khối (Block)"},
+  {key:"BN",name:"Đổi tên khối (Rename Block)",category:"Khối (Block)"},
+  {key:"BE",name:"Chỉnh sửa khối (Edit Block)",category:"Khối (Block)"},
+  {key:"BD",name:"Chỉnh sửa khối từ tham chiếu (Edit Block from Reference)",category:"Khối (Block)"},
+  {key:"EM",name:"Quay về bản vẽ chính từ khối (Return to Main Drawing)",category:"Khối (Block)"},
+  {key:"BK",name:"Chọn các tham chiếu khối (Select Block References)",category:"Khối (Block)"},
+  {key:"BX",name:"Bỏ chọn các tham chiếu khối (Deselect Block References)",category:"Khối (Block)"},
+  {key:"BI",name:"Chèn khối vào bản vẽ (Insert Block)",category:"Khối (Block)"},
+
+  // ========== LAYER ==========
+  {key:"YV",name:"Bật/Tắt hiển thị lớp (Toggle Layer Visibility)",category:"Lớp (Layer)"},
+  {key:"YL",name:"Bật/Tắt khóa lớp (Toggle Lock Status)",category:"Lớp (Layer)"},
+  {key:"YO",name:"Chỉ hiện lớp đang hoạt động (Show Only Active)",category:"Lớp (Layer)"},
+  {key:"YS",name:"Hiện tất cả các lớp (Show All Layers)",category:"Lớp (Layer)"},
+  {key:"YH",name:"Ẩn tất cả các lớp (Hide All Layers)",category:"Lớp (Layer)"},
+  {key:"YK",name:"Khóa tất cả các lớp (Lock All Layers)",category:"Lớp (Layer)"},
+  {key:"YN",name:"Mở khóa tất cả các lớp (Unlock All Layers)",category:"Lớp (Layer)"},
+  {key:"YA",name:"Thêm lớp mới (Add Layer)",category:"Lớp (Layer)"},
+  {key:"YR",name:"Xóa lớp (Delete Layer)",category:"Lớp (Layer)"},
+  {key:"YE",name:"Chỉnh sửa thuộc tính lớp (Edit Layer)",category:"Lớp (Layer)"},
+  {key:"YC",name:"Chọn tất cả đối tượng thuộc lớp (Select Layer Entities)",category:"Lớp (Layer)"},
+  {key:"YD",name:"Bỏ chọn tất cả đối tượng thuộc lớp (Deselect Layer Entities)",category:"Lớp (Layer)"},
+
+  // ========== WINDOW ==========
+  {key:"Ctrl+Shift+W",name:"Đóng tất cả các cửa sổ bản vẽ (Close All)",category:"Cửa sổ (Window)"},
+  {key:"Ctrl+Right / PgUp",name:"Chuyển sang cửa sổ bản vẽ tiếp theo (Next)",category:"Cửa sổ (Window)"},
+  {key:"Ctrl+Left / PgDown",name:"Chuyển sang cửa sổ bản vẽ trước đó (Previous)",category:"Cửa sổ (Window)"},
+
+  // ========== DEVELOPMENT ==========
+  {key:"GE",name:"Mở cửa sổ Script Shell (Script Shell)",category:"Phát triển (Development)"},
+  {key:"XC",name:"Chạy script (Run Script)",category:"Phát triển (Development)"},
+
+  // ========== SNAP ==========
+  {key:"SF",name:"Bắt điểm tự do (Free Snap)",category:"Bắt điểm (Snap)"},
+  {key:"SG",name:"Bắt điểm trên lưới (Grid Snap)",category:"Bắt điểm (Snap)"},
+  {key:"SE",name:"Bắt điểm cuối (End Snap)",category:"Bắt điểm (Snap)"},
+  {key:"ST",name:"Bắt điểm trên đối tượng (On Entity Snap)",category:"Bắt điểm (Snap)"},
+  {key:"SU",name:"Bắt điểm vuông góc (Perpendicular Snap)",category:"Bắt điểm (Snap)"},
+  {key:"SB",name:"Bắt điểm tiếp tuyến (Tangential Snap)",category:"Bắt điểm (Snap)"},
+  {key:"SC",name:"Bắt điểm tâm (Center Snap)",category:"Bắt điểm (Snap)"},
+  {key:"SR",name:"Bắt điểm tham chiếu (Reference Snap)",category:"Bắt điểm (Snap)"},
+  {key:"SM",name:"Bắt điểm giữa (Middle Snap)",category:"Bắt điểm (Snap)"},
+  {key:"SN",name:"Bắt điểm giữa thủ công (Middle Manual)",category:"Bắt điểm (Snap)"},
+  {key:"SD",name:"Bắt điểm theo khoảng cách (Distance Snap)",category:"Bắt điểm (Snap)"},
+  {key:"SH",name:"Bắt điểm theo khoảng cách thủ công (Distance Manual)",category:"Bắt điểm (Snap)"},
+  {key:"SI",name:"Bắt điểm giao cắt (Intersection Snap)",category:"Bắt điểm (Snap)"},
+  {key:"SY",name:"Bắt điểm giao cắt thủ công (Intersection Manual)",category:"Bắt điểm (Snap)"},
+  {key:"SA",name:"Bắt điểm tự động (Auto Snap)",category:"Bắt điểm (Snap)"},
+  {key:"SX",name:"Bắt điểm theo tọa độ (Coordinate Snap)",category:"Bắt điểm (Snap)"},
+  {key:"SO",name:"Bắt điểm theo tọa độ cực (Polar Coordinate Snap)",category:"Bắt điểm (Snap)"},
+  {key:"PX",name:"Lấy tọa độ X/Y từ các điểm (X/Y from Points)",category:"Bắt điểm (Snap)"},
+  {key:"PY",name:"Lấy tọa độ Y/X từ các điểm (Y/X from Points)",category:"Bắt điểm (Snap)"},
+  {key:"SK",name:"Bắt điểm tham chiếu của vùng chọn (Selection Reference Points)",category:"Bắt điểm (Snap)"},
+  {key:"EN",name:"Tắt mọi hạn chế bắt điểm (Restrictions Off)",category:"Bắt điểm (Snap)"},
+  {key:"EO",name:"Hạn chế bắt điểm theo phương vuông góc (Restrict Orthogonally)",category:"Bắt điểm (Snap)"},
+  {key:"EH",name:"Hạn chế bắt điểm theo phương ngang (Restrict Horizontally)",category:"Bắt điểm (Snap)"},
+  {key:"EV",name:"Hạn chế bắt điểm theo phương đứng (Restrict Vertically)",category:"Bắt điểm (Snap)"},
+  {key:"EL",name:"Hạn chế bắt điểm theo góc hoặc chiều dài (Restrict Angle or Length)",category:"Bắt điểm (Snap)"},
+  {key:"RZ",name:"Đặt điểm gốc tương đối mới (Set Relative Zero)",category:"Bắt điểm (Snap)"},
+  {key:"RL",name:"Khóa điểm gốc tương đối (Lock Relative Zero)",category:"Bắt điểm (Snap)"}
+];
+
+const inputKey = document.getElementById('searchKey');
+const inputName = document.getElementById('searchName');
+const listKey = document.getElementById('listKey');
+const listName = document.getElementById('listName');
+const resultBox = document.getElementById('result');
+const totalCount = document.getElementById('totalCount');
+
+totalCount.textContent = `Tổng số lệnh đã nạp: ${commands.length}`;
+
+function removeTones(str) {
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "d").toLowerCase();
+}
+
+function makeItemHTML(cmd) {
+  return `<span class="item-key">${cmd.key}</span><span class="item-name">${cmd.name}</span><span class="item-cat">${cmd.category}</span>`;
+}
+
+function showDetail(cmd) {
+  resultBox.innerHTML = `
+    <h3>Thông tin chi tiết lệnh:</h3>
+    <p><strong>Phím tắt (Key):</strong> <span style="color:#2563eb; font-weight:bold;">${cmd.key}</span></p>
+    <p><strong>Tác dụng (Name):</strong> ${cmd.name}</p>
+    <p><strong>Danh mục (Category):</strong> ${cmd.category}</p>
+  `;
+  resultBox.style.display = 'block';
+}
+
+inputKey.addEventListener('input', function() {
+  const query = this.value.trim().toLowerCase();
+  listKey.innerHTML = '';
+  listName.innerHTML = '';
+  if (!query) return;
+  const filtered = commands.filter(cmd => cmd.key.toLowerCase().includes(query));
+  filtered.forEach(cmd => {
+    const div = document.createElement('div');
+    div.className = 'item';
+    div.innerHTML = makeItemHTML(cmd);
+    div.addEventListener('click', function() {
+      inputKey.value = cmd.key;
+      inputName.value = '';
+      listKey.innerHTML = '';
+      showDetail(cmd);
+    });
+    listKey.appendChild(div);
+  });
+});
+
+inputName.addEventListener('input', function() {
+  const query = this.value.trim().toLowerCase();
+  const queryNoTone = removeTones(query);
+  listName.innerHTML = '';
+  listKey.innerHTML = '';
+  if (!query) return;
+  const filtered = commands.filter(cmd => {
+    const nameMatch = cmd.name.toLowerCase().includes(query);
+    const nameNoToneMatch = removeTones(cmd.name).includes(queryNoTone);
+    return nameMatch || nameNoToneMatch;
+  });
+  filtered.forEach(cmd => {
+    const div = document.createElement('div');
+    div.className = 'item';
+    div.innerHTML = makeItemHTML(cmd);
+    div.addEventListener('click', function() {
+      inputName.value = cmd.name;
+      inputKey.value = '';
+      listName.innerHTML = '';
+      showDetail(cmd);
+    });
+    listName.appendChild(div);
+  });
+});
+
+document.addEventListener('click', function(e) {
+  if (e.target !== inputKey && e.target !== inputName) {
+    listKey.innerHTML = '';
+    listName.innerHTML = '';
+  }
+});
+</script>
+</body>
+</html>

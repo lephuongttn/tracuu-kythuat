@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1e293b">
+  <link rel="manifest" href="manifest.json">
+  <title>PHẦN MỀM TRA CỨU & TÍNH TOÁN KỸ THUẬT</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+      display: flex;
+      height: 100vh;
+      background: #f1f5f9;
+      overflow: hidden;
+    }
+
+    /* MENU BÊN TRÁI (THU GỌN) */
+    .sidebar {
+      width: 265px;
+      background: #1e293b;
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+      z-index: 10;
+    }
+
+    /* HEADER CỦA SIDEBAR */
+    .brand-header {
+      padding: 10px 12px;
+      background: #0f172a;
+      border-bottom: 1px solid #334155;
+      text-align: center;
+    }
+    .brand-header h3 {
+      margin: 0;
+      font-size: 14.5px;
+      letter-spacing: 0.4px;
+      color: #38bdf8;
+    }
+    .brand-badge {
+      display: inline-block;
+      margin-top: 4px;
+      padding: 1px 7px;
+      font-size: 10px;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 10px;
+    }
+
+    /* DANH SÁCH CHỨC NĂNG */
+    .menu-list {
+      flex: 1;
+      padding: 8px 10px;
+      overflow-y: auto;
+    }
+
+    /* Thanh cuộn siêu mỏng khi màn hình thấp */
+    .menu-list::-webkit-scrollbar { width: 4px; }
+    .menu-list::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+
+    /* TIÊU ĐỀ PHÂN NHÓM NỔI BẬT */
+    .menu-group-title {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 10px 0 5px 0;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      border-left: 3px solid;
+    }
+    .menu-group-title:first-child { margin-top: 0; }
+
+    /* Màu nhấn riêng cho từng nhóm */
+    .group-lookup { color: #2dd4bf; background: rgba(45, 212, 191, 0.12); border-left-color: #2dd4bf; }
+    .group-calc { color: #fbbf24; background: rgba(251, 191, 36, 0.12); border-left-color: #fbbf24; }
+    .group-cad { color: #c084fc; background: rgba(192, 132, 252, 0.12); border-left-color: #c084fc; }
+
+    .sidebar a {
+      display: block;
+      padding: 6px 10px;
+      margin-bottom: 4px;
+      color: #e2e8f0;
+      text-decoration: none;
+      background: #283548;
+      border-radius: 5px;
+      font-size: 12.5px;
+      line-height: 1.3;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+    .sidebar a:hover {
+      background: #3b4d66;
+      color: #fff;
+      transform: translateX(2px);
+    }
+    .sidebar a.active {
+      background: linear-gradient(90deg, #0284c7, #0369a1);
+      color: #fff;
+      font-weight: 600;
+      border-left: 3px solid #38bdf8;
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35);
+    }
+
+    /* KHUNG TÁC GIẢ & THÔNG TIN (GỌN GÀNG + CHỪA ĐÁY TRÁNH QUẢNG CÁO) */
+    .author-footer {
+      padding: 8px 10px 48px 10px;
+      background: #0f172a;
+      border-top: 1px solid #334155;
+      font-size: 11.5px;
+    }
+    .author-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .author-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0284c7, #10b981);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 12px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .author-details strong { display: block; color: #f8fafc; font-size: 12.5px; }
+    .author-details span { color: #94a3b8; font-size: 10.5px; }
+    .btn-about {
+      width: 100%;
+      padding: 5px;
+      background: #1e293b;
+      color: #38bdf8;
+      border: 1px solid #334155;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11.5px;
+      transition: background 0.2s;
+    }
+    .btn-about:hover { background: #334155; }
+
+    /* NỘI DUNG CHÍNH */
+    .content { flex: 1; padding: 8px; display: flex; }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    /* HỘP THOẠI GIỚI THIỆU (MODAL) */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-box {
+      background: #fff;
+      width: 90%;
+      max-width: 440px;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      color: #1e293b;
+    }
+    .modal-box h4 { margin: 0 0 10px 0; color: #0284c7; font-size: 16px; }
+    .modal-box p { font-size: 13px; line-height: 1.5; color: #475569; margin: 8px 0; }
+    .modal-box ul { font-size: 12.5px; color: #334155; padding-left: 18px; line-height: 1.6; }
+    .btn-close {
+      margin-top: 14px;
+      width: 100%;
+      padding: 8px;
+      background: #0284c7;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn-close:hover { background: #0369a1; }
+  </style>
+</head>
+<body>
+
+  <!-- THANH MENU BÊN TRÁI -->
+  <div class="sidebar">
+    <div class="brand-header">
+      <h3>⚙️ KỸ THUẬT CẤP NƯỚC</h3>
+      <span class="brand-badge">● Phiên bản 1.0 • Chrome Web App</span>
+    </div>
+
+    <div class="menu-list">
+      <div class="menu-group-title group-lookup">📘 Tra cứu tiêu chuẩn & Vật tư</div>
+      <a href="javascript:void(0)" onclick="loadPage('tra_cuu_ong_nuoc_uPVC-HDPE.html', this)">1. Tra cứu ống nước HDPE và uPVC</a>
+      <a href="javascript:void(0)" onclick="loadPage('Thong-so-mat-bich.html', this)">2. Tra cứu thông số mặt bích thép</a>
+      <a href="javascript:void(0)" onclick="loadPage('pipe_lookup.html', this)">3. Bảng tra đường kính ống danh định</a>
+
+      <div class="menu-group-title group-calc">🧮 Tính toán thi công & Dự toán</div>
+      <a href="javascript:void(0)" onclick="loadPage('Tinh_toan_nuoc_suc_xa_be_ong.html', this)">4. Tính lượng nước bể ống & súc xả</a>
+      <a href="javascript:void(0)" onclick="loadPage('Dinh_muc_be_tong_M150_M200.html', this)">5. Định mức vật tư hoàn trả mặt bằng</a>
+      <a href="javascript:void(0)" class="active" onclick="loadPage('Tinh_toan_dao_muong_ong.html', this)">6. Tính toán đào mương và chôn ống</a>
+
+      <div class="menu-group-title group-cad">📐 Tiện ích bản vẽ CAD</div>
+      <a href="javascript:void(0)" onclick="loadPage('QCAD_TraCuu_DayDu.html', this)">7. Bảng lệnh tắt QCAD</a>
+      <a href="javascript:void(0)" onclick="loadPage('OpenCadStudio_TraCuu.html', this)">8. Bảng lệnh tắt Open CAD Studio</a>
+    </div>
+
+    <!-- KHUNG TÁC GIẢ -->
+    <div class="author-footer">
+      <div class="author-info">
+        <div class="author-avatar">LP</div>
+        <div class="author-details">
+          <strong>Lê Phường</strong>
+          <span>Xí nghiệp dịch vụ</span>
+        </div>
+      </div>
+      <button class="btn-about" onclick="toggleModal(true)">ℹ️ Thông tin phần mềm & Tác giả</button>
+    </div>
+  </div>
+
+  <!-- KHUNG HIỂN THỊ NỘI DUNG -->
+  <div class="content">
+    <iframe id="mainFrame" src="Tinh_toan_dao_muong_ong.html"></iframe>
+  </div>
+
+  <!-- HỘP THOẠI GIỚI THIỆU -->
+  <div class="modal-overlay" id="aboutModal" onclick="if(event.target === this) toggleModal(false)">
+    <div class="modal-box">
+      <h4>⚙️ Bộ Công Cụ Tra Cứu & Tính Toán Kỹ Thuật</h4>
+      <p><strong>Phát triển bởi:</strong>Google Gemini</p>
+      <p><strong>Mục đích:</strong> Hỗ trợ tính toán nhanh khối lượng đào đắp, súc xả đường ống, định mức vật tư và tra cứu tiêu chuẩn ngay tại hiện trường.</p>
+      <ul>
+        <li>Hoạt động trên Chrome.</li>
+        <li>Dữ liệu tính toán bám sát định mức xây dựng và tiêu chuẩn ống hiện hành.</li>
+        <li>Liên hệ góp ý: <strong>Xí nghiệp dịch vụ</strong></li>
+      </ul>
+      <button class="btn-close" onclick="toggleModal(false)">Đóng cửa sổ</button>
+    </div>
+  </div>
+
+  <!-- MÃ XỬ LÝ CHUYỂN TRANG & BẬT TẮT HỘP THOẠI -->
+  <script>
+    function loadPage(url, element) {
+      document.getElementById('mainFrame').src = url;
+      const links = document.querySelectorAll('.sidebar a');
+      links.forEach(link => link.classList.remove('active'));
+      if (element) {
+        element.classList.add('active');
+      }
+    }
+
+    function toggleModal(show) {
+      const modal = document.getElementById('aboutModal');
+      modal.style.display = show ? 'flex' : 'none';
+    }
+  </script>
+
+</body>
+</html>

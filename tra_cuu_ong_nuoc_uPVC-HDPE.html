@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tra Cứu Ống HDPE & uPVC - 2026</title>
+
+<style>
+:root{
+    --primary:#0f766e;     /* xanh ngọc đậm */
+    --primary-soft:#ccfbf1;
+    --bg:#f5f7f8;
+    --border:#d1d5db;
+    --text:#1f2937;
+}
+
+*{ box-sizing:border-box; }
+
+body{
+    margin:0;
+    min-height:100vh;
+    font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+    background:var(--bg);
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    padding:16px;
+    color:var(--text);
+}
+
+.container{
+    width:100%;
+    max-width:760px;
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:10px 20px 20px;
+}
+
+/* ===== HEADER ===== */
+.header{
+    text-align:center;
+    margin-bottom:10px;
+}
+.header h2{
+    margin:0;
+    font-size:20px;
+    color:var(--primary);
+}
+.header .sub{
+    font-size:14px;
+    color:#555;
+    margin-top:2px;
+}
+
+/* ===== SEARCH ===== */
+.search-group{
+    display:grid;
+    grid-template-columns:140px 1fr auto;
+    gap:10px;
+    margin:14px 0 10px;
+}
+
+select,input{
+    padding:10px 12px;
+    font-size:14px;
+    border:1px solid var(--border);
+    border-radius:8px;
+}
+
+select:focus,input:focus{
+    outline:none;
+    border-color:var(--primary);
+}
+
+button{
+    background:var(--primary);
+    color:#fff;
+    border:none;
+    padding:10px 22px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+}
+button:hover{ opacity:.9; }
+
+/* ===== STATUS ===== */
+.count-info{
+    font-size:13px;
+    color:#475569;
+    margin:8px 0 12px;
+    font-style:italic;
+}
+
+.error{
+    color:#991b1b;
+    background:#fee2e2;
+    border:1px solid #fecaca;
+    padding:10px;
+    border-radius:8px;
+    font-size:14px;
+    text-align:center;
+}
+
+/* ===== RESULT CARD ===== */
+.result-card{
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:12px 14px;
+    margin-bottom:14px;
+    background:#fafafa;
+}
+
+.result-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:6px;
+}
+
+.result-header strong{
+    font-size:15px;
+}
+
+.std-badge{
+    background:var(--primary-soft);
+    color:var(--primary);
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:600;
+}
+
+/* ===== TABLE ===== */
+table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:14px;
+}
+
+thead th{
+    text-align:left;
+    font-weight:600;
+    color:#374151;
+    border-bottom:1px solid var(--border);
+    padding:6px 4px;
+}
+
+tbody td{
+    padding:6px 4px;
+    border-bottom:1px dashed #e5e7eb;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+    <div class="header">
+        <h2>🚰📏 Tra Cứu Thông Số Ống HDPE & uPVC Đệ Nhất</h2>
+        <div class="sub">Theo TCVN – ISO – ASTM (cập nhật 2026)</div>
+    </div>
+
+    <div class="search-group">
+        <select id="pipeType">
+            <option value="HDPE">Ống HDPE</option>
+            <option value="UPVC">Ống uPVC</option>
+        </select>
+        <input type="number" id="odInput" placeholder="Nhập đường kính ngoài OD (mm)">
+        <button onclick="lookupPipe()">Tra cứu</button>
+    </div>
+
+    <div id="statusMsg"></div>
+    <div id="resultsContainer"></div>
+
+</div>
+
+<script>
+/* ================= DỮ LIỆU ================= */
+
+// HDPE – GIỮ NGUYÊN CẤU TRÚC
+const pipeDataHDPE = [
+ { OD_mm: 20, Standard: "TCVN 7305/ISO 4427", thickness: { "PN12.5": 1.8, PN16: 2.0, PN20: 2.3 } },
+    { OD_mm: 25, Standard: "TCVN 7305/ISO 4427", thickness: { "PN12.5": 2.0, PN16: 2.3, PN20: 3.0 } },
+    { OD_mm: 32, Standard: "TCVN 7305/ISO 4427", thickness: { PN10: 2.0, "PN12.5": 2.4, PN16: 3.0, PN20: 3.6 } },
+    { OD_mm: 40, Standard: "TCVN 7305/ISO 4427", thickness: { PN8: 2.0, PN10: 2.4, "PN12.5": 3.0, PN16: 3.7, PN20: 4.5 } },
+    { OD_mm: 50, Standard: "TCVN 7305/ISO 4427", thickness: { PN8: 2.4, PN10: 3.0, "PN12.5": 3.7, PN16: 4.6, PN20: 5.6 } },
+    { OD_mm: 63, Standard: "TCVN 7305/ISO 4427", thickness: { PN8: 3.0, PN10: 3.8, "PN12.5": 4.7, PN16: 5.8, PN20: 7.1 } },
+    { OD_mm: 75, Standard: "TCVN 7305/ISO 4427", thickness: { PN8: 3.6, PN10: 4.5, "PN12.5": 5.6, PN16: 6.8, PN20: 8.4 } },
+    { OD_mm: 90, Standard: "TCVN 7305/ISO 4427", thickness: { PN8: 4.3, PN10: 5.4, "PN12.5": 6.7, PN16: 8.2, PN20: 10.1 } },
+    { OD_mm: 110, Standard: "TCVN 7305/ISO 4427", thickness: { PN6: 4.2, PN8: 5.3, PN10: 6.6, "PN12.5": 8.1, PN16: 10.0, PN20: 12.3 } },
+    { OD_mm: 125, Standard: "TCVN 7305/ISO 4427", thickness: { PN6: 4.8, PN8: 6.0, PN10: 7.4, "PN12.5": 9.2, PN16: 11.4, PN20: 14.0 } },
+    { OD_mm: 140, Standard: "TCVN 7305/ISO 4427", thickness: { PN6: 5.4, PN8: 6.7, PN10: 8.3, "PN12.5": 10.3, PN16: 12.7, PN20: 15.7 } },
+    { OD_mm: 160, Standard: "TCVN 7305/ISO 4427", thickness: { PN6: 6.2, PN8: 7.7, PN10: 9.5, "PN12.5": 11.8, PN16: 14.6, PN20: 17.9 } },
+    { OD_mm: 180, Standard: "TCVN 7305/ISO 4427", thickness: { PN6: 6.9, PN8: 8.6, PN10: 10.7, "PN12.5": 13.3, PN16: 16.4, PN20: 20.1 } },
+    { OD_mm: 200, Standard: "TCVN 7305/ISO 4427", thickness: { PN6: 7.7, PN8: 9.6, PN10: 11.9, "PN12.5": 14.7, PN16: 18.2, PN20: 22.4 } },
+    { OD_mm: 225, Standard: "TCVN 7305/ISO 4427", thickness: { PN6: 8.6, PN8: 10.8, PN10: 13.4, "PN12.5": 16.6, PN16: 20.5, PN20: 25.2 } },
+    { OD_mm: 250, Standard: "TCVN 7305/ISO 4427", thickness: { PN6: 9.6, PN8: 11.9, PN10: 14.8, "PN12.5": 18.4, PN16: 22.7, PN20: 27.9 } },
+    { OD_mm: 280, Standard: "TCVN 7305/ISO 4427", thickness: { PN6: 10.7, PN8: 13.4, PN10: 16.6, "PN12.5": 20.6, PN16: 25.4, PN20: 31.3 } },
+    { OD_mm: 315, Standard: "TCVN 7305/ISO 4427", thickness: { PN6: 12.1, PN8: 15.0, PN10: 18.7, "PN12.5": 23.2, PN16: 28.6, PN20: 35.2 } },
+    { OD_mm: 355, Standard: "TCVN 7305/ISO 4427", thickness: { PN6: 13.6, PN8: 16.9, PN10: 21.1, "PN12.5": 26.1, PN16: 32.2, PN20: 39.7 } },
+    { OD_mm: 400, Standard: "TCVN 7305/ISO 4427", thickness: { PN6: 15.3, PN8: 19.1, PN10: 23.7, "PN12.5": 29.4, PN16: 36.3, PN20: 44.7 } },
+    { OD_mm: 450, Standard: "TCVN 7305/ISO 4427", thickness: { PN6: 17.2, PN8: 21.5, PN10: 26.7, "PN12.5": 33.1, PN16: 40.9, PN20: 50.3 } },
+    { OD_mm: 500, Standard: "TCVN 7305/ISO 4427", thickness: { PN6: 19.1, PN8: 23.9, PN10: 29.7, "PN12.5": 36.8, PN16: 45.4, PN20: 55.8 } },
+    { OD_mm: 560, Standard: "TCVN 7305/ISO 4427", thickness: { PN6: 21.4, PN8: 26.7, PN10: 33.2, "PN12.5": 41.2, PN16: 50.8 } },
+    { OD_mm: 630, Standard: "TCVN 7305/ISO 4427", thickness: { PN6: 24.1, PN8: 30.0, PN10: 37.4, "PN12.5": 46.3, PN16: 57.2 } },
+    { OD_mm: 710, Standard: "TCVN 7305/ISO 4427", thickness: { PN6: 27.2, PN8: 33.9, PN10: 42.1, "PN12.5": 52.2 } },
+    { OD_mm: 800, Standard: "TCVN 7305/ISO 4427", thickness: { PN6: 30.6, PN8: 38.1, PN10: 47.4, "PN12.5": 58.8 } },
+    { OD_mm: 900, Standard: "TCVN 7305/ISO 4427", thickness: { PN6: 34.4, PN8: 42.9, PN10: 53.3, "PN12.5": 66.2 } },
+    { OD_mm: 1000, Standard: "TCVN 7305/ISO 4427", thickness: { PN6: 38.2, PN8: 47.7, PN10: 59.3 } },
+    { OD_mm: 1200, Standard: "TCVN 7305/ISO 4427", thickness: { PN6: 45.9, PN8: 57.2, PN10: 67.9 } }
+ // 👉 TOÀN BỘ data HDPE ở đây
+];
+
+// uPVC – GIỮ NGUYÊN CẤU TRÚC
+const pipeDataUPVC = [
+ { DKND_Inch: "1/2\"", OD_mm: 21, Standard: "ASTM 2241/TCVN 8491/ISO 1452", thickness: { PN10: 1.2, "PN12.5": 1.5, PN16: 1.7, PN22: 3.0 } },
+            { DKND_Inch: "3/4\"", OD_mm: 27, Standard: "ASTM 2241/TCVN 8491/ISO 1452", thickness: { PN10: 1.3, "PN12.5": 1.5, PN16: 1.9, PN22: 3.0 } },
+            { DKND_Inch: "1\"", OD_mm: 34, Standard: "ASTM 2241/TCVN 8491/ISO 1452", thickness: { PN10: 1.5, "PN12.5": 2.1, PN18: 3.0 } },
+            { DKND_Inch: "1.1/4\"", OD_mm: 42, Standard: "ASTM 2241/TCVN 8491/ISO 1452", thickness: { PN6: 1.5, PN8: 1.8, PN12: 2.1, PN16: 3.5 } },
+            { DKND_Inch: "1.1/2\"", OD_mm: 49, Standard: "ASTM 2241/TCVN 8491/ISO 1452", thickness: { PN6: 1.8, PN8: 2.0, PN12: 2.5, PN16: 3.5 } },
+            { DKND_Inch: "2\"", OD_mm: 60, Standard: "ASTM 2241/TCVN 8491/ISO 1452", thickness: { PN6: 2.0, PN10: 2.5, PN11: 3.0, PN12: 4.0, PN16: 4.5 } },
+            { DKND_Inch: "2.1/2\"", OD_mm: 76, Standard: "ASTM 2241/TCVN 8491/ISO 1452", thickness: { PN8: 3.0, PN12: 4.5 } },
+            { DKND_Inch: "3\"", OD_mm: 90, Standard: "ASTM 2241/TCVN 8491/ISO 1452", thickness: { PN6: 3.0, PN9: 4.0, PN12: 5.5 } },
+            { DKND_Inch: "4\"", OD_mm: 114, Standard: "ASTM 2241/TCVN 8491/ISO 1452", thickness: { PN6: 3.5, PN9: 5.0, PN12: 7.0 } },
+            { DKND_Inch: "5\"", OD_mm: 140, Standard: "ASTM 2241/TCVN 8491/ISO 1452", thickness: { PN5: 3.5, PN8: 5.0, PN12: 7.5 } },
+            { DKND_Inch: "6\"", OD_mm: 168, Standard: "ASTM 2241/TCVN 8491/ISO 1452", thickness: { PN6: 4.5, PN9: 7.0, PN12: 9.0 } },
+            { DKND_Inch: "8\"", OD_mm: 220, Standard: "ASTM 2241/TCVN 8491/ISO 1452", thickness: { PN6: 6.6, PN9: 8.7 } },
+            { DKND_Inch: "100", OD_mm: 122, Standard: "AS 1477", thickness: { PN12: 6.7 } },
+            { DKND_Inch: "150", OD_mm: 177, Standard: "AS 1477", thickness: { PN12: 9.7 } },
+            { DKND_Inch: "200", OD_mm: 222, Standard: "ISO 2531", thickness: { PN10: 9.7, PN12: 11.4 } },
+		{ DKND_Inch: "63", OD_mm: 63, Standard: "TCVN 6151/ISO 4422", thickness: { PN6: 1.9, PN8: 2.4, PN10: 3.0, "PN12.5": 3.8 } },
+        { DKND_Inch: "75", OD_mm: 75, Standard: "TCVN 6151/ISO 4422", thickness: { PN6: 2.2, PN8: 2.9, PN10: 3.6, "PN12.5": 4.5, PN16: 5.5 } },
+        { DKND_Inch: "90", OD_mm: 90, Standard: "TCVN 6151/ISO 4422", thickness: { PN5: 2.2, PN6: 2.7, PN8: 3.5, PN10: 4.3, "PN12.5": 5.4, PN16: 6.6 } },
+        { DKND_Inch: "110", OD_mm: 110, Standard: "TCVN 6151/ISO 4422", thickness: { PN5: 2.7, PN6: 3.2, PN8: 4.2, PN10: 5.3, "PN12.5": 6.6, PN16: 8.1, PN25: 12.3 } },
+        { DKND_Inch: "125", OD_mm: 125, Standard: "TCVN 6151/ISO 4422", thickness: { PN5: 3.1, PN6: 3.7, PN8: 4.8, PN10: 6.0, "PN12.5": 7.4, PN16: 9.2, PN25: 14.0 } },
+        { DKND_Inch: "140", OD_mm: 140, Standard: "TCVN 6151/ISO 4422", thickness: { PN6: 4.1, PN8: 5.4, PN10: 6.7, "PN12.5": 8.3, PN16: 10.3 } },
+        { DKND_Inch: "160", OD_mm: 160, Standard: "TCVN 6151/ISO 4422", thickness: { PN5: 4.0, PN6: 4.7, PN8: 6.2, PN10: 7.7, "PN12.5": 9.5, PN16: 11.8 } },
+        { DKND_Inch: "200", OD_mm: 200, Standard: "TCVN 6151/ISO 4422", thickness: { PN5: 4.9, PN6: 5.9, PN8: 7.7, PN10: 9.6, "PN12.5": 11.9 } },
+        { DKND_Inch: "225", OD_mm: 225, Standard: "TCVN 6151/ISO 4422", thickness: { PN5: 5.5, PN6: 6.6, PN8: 8.6, PN10: 10.8, "PN12.5": 13.4, PN16: 16.6 } },
+        { DKND_Inch: "250", OD_mm: 250, Standard: "TCVN 6151/ISO 4422", thickness: { PN5: 6.2, PN6: 7.3, PN8: 9.6, PN10: 11.9, "PN12.5": 14.8 } },
+		{ DKND_Inch: "280", OD_mm: 280, Standard: "TCVN 6151/ISO 4422", thickness: { PN5: 6.9, PN6: 8.2, PN8: 10.7, PN10: 13.4, "PN12.5": 16.6, PN16: 20.6 } },
+		{ DKND_Inch: "315", OD_mm: 315, Standard: "TCVN 6151/ISO 4422", thickness: { PN5: 7.7, PN6: 9.2, PN8: 12.1, PN10: 15.0, "PN12.5": 18.7, PN16: 23.2 } },
+		{ DKND_Inch: "355", OD_mm: 355, Standard: "TCVN 6151/ISO 4422", thickness: { PN5: 8.7, PN6: 10.4, PN8: 13.6, PN10: 16.9 } },
+		{ DKND_Inch: "400", OD_mm: 400, Standard: "TCVN 6151/ISO 4422", thickness: { PN5: 9.8, PN6: 11.7, PN8: 15.3, PN10: 19.1 } },
+		{ DKND_Inch: "450", OD_mm: 450, Standard: "TCVN 6151/ISO 4422", thickness: { PN5: 11.0, PN6: 13.2, PN8: 17.2, PN10: 21.5 } },
+		{ DKND_Inch: "500", OD_mm: 500, Standard: "TCVN 6151/ISO 4422", thickness: { PN5: 12.3, PN6: 14.6, PN10: 23.9 } },
+		{ DKND_Inch: "630", OD_mm: 630, Standard: "TCVN 6151/ISO 4422", thickness: { PN5: 15.4, PN6: 18.4, PN10: 30.0 } },
+{"DKND_Inch":"75","OD_mm":75,"Standard":"TCVN 8491/ISO 1452","thickness":{"PN6":2.3,"PN8":2.9,"PN10":3.6,"PN12.5":4.5, "PN16":5.6}},
+{"DKND_Inch":"90","OD_mm":90,"Standard":"TCVN 8491/ISO 1452","thickness":{"PN6":2.8,"PN8":3.5,"PN10":4.3,"PN12.5":5.4,"PN16":6.7}},
+{"DKND_Inch":"110","OD_mm":110,"Standard":"TCVN 8491/ISO 1452","thickness":{"PN6":2.7,"PN8":3.4,"PN10":4.2,"PN12.5":5.3,"PN16":6.6}},
+{"DKND_Inch":"125","OD_mm":125,"Standard":"TCVN 8491/ISO 1452","thickness":{"PN6":3.1,"PN8":3.9,"PN10":4.8,"PN12.5":6.0,"PN16":7.4}},
+{"DKND_Inch":"140","OD_mm":140,"Standard":"TCVN 8491/ISO 1452","thickness":{"PN6":3.5,"PN8":4.3,"PN10":5.4,"PN12.5":6.7,"PN16":8.3}},
+{"DKND_Inch":"160","OD_mm":160,"Standard":"TCVN 8491/ISO 1452","thickness":{"PN6":4.0,"PN8":4.9,"PN10":6.2,"PN12.5":7.7,"PN16":9.5}},
+{"DKND_Inch":"200","OD_mm":200,"Standard":"TCVN 8491/ISO 1452","thickness":{"PN6":4.9,"PN8":6.2,"PN10":7.7,"PN12.5":9.6,"PN16":11.9}},
+{"DKND_Inch":"225","OD_mm":225,"Standard":"TCVN 8491/ISO 1452","thickness":{"PN6":5.5,"PN8":6.9,"PN10":8.6,"PN12.5":10.8,"PN16":13.4}},
+{"DKND_Inch":"250","OD_mm":250,"Standard":"TCVN 8491/ISO 1452","thickness":{"PN6":6.2,"PN8":7.7,"PN10":9.6,"PN12.5":11.9,"PN16":14.8}},
+{"DKND_Inch":"280","OD_mm":280,"Standard":"TCVN 8491/ISO 1452","thickness":{"PN6":6.9,"PN8":8.6,"PN10":10.7,"PN12.5":13.4,"PN16":16.6}},
+{"DKND_Inch":"315","OD_mm":315,"Standard":"TCVN 8491/ISO 1452","thickness":{"PN6":7.7,"PN8":9.7,"PN10":12.1,"PN12.5":15.0,"PN16":18.7}},
+{"DKND_Inch":"355","OD_mm":355,"Standard":"TCVN 8491/ISO 1452","thickness":{"PN6":8.7,"PN8":10.9,"PN10":13.6,"PN12.5":16.9}},
+{"DKND_Inch":"400","OD_mm":400,"Standard":"TCVN 8491/ISO 1452","thickness":{"PN6":9.8,"PN8":12.3,"PN10":15.3,"PN12.5":19.7}},
+{"DKND_Inch":"450","OD_mm":450,"Standard":"TCVN 8491/ISO 1452","thickness":{"PN6":11.0,"PN8":13.8,"PN10":17.2,"PN12.5":21.5}},
+{"DKND_Inch":"500","OD_mm":500,"Standard":"TCVN 8491/ISO 1452","thickness":{"PN6":12.3,"PN8":15.3,"PN12.5":23.9}},
+{"DKND_Inch":"560","OD_mm":560,"Standard":"TCVN 8491/ISO 1452","thickness":{"PN8":17.2,"PN12.5":26.7}},
+{"DKND_Inch":"630","OD_mm":630,"Standard":"TCVN 8491/ISO 1452","thickness":{"PN8":19.3,"PN12.5":30.0}}
+ // 👉 TOÀN BỘ data uPVC ở đây
+];
+
+/* ================= TRA CỨU ================= */
+function lookupPipe() {
+    const val = parseInt(document.getElementById('odInput').value);
+    const type = document.getElementById('pipeType').value;
+    const container = document.getElementById('resultsContainer');
+    const status = document.getElementById('statusMsg');
+
+    const pipeData = (type === "HDPE") ? pipeDataHDPE : pipeDataUPVC;
+    const matches = pipeData.filter(p => p.OD_mm === val);
+
+    container.innerHTML = '';
+
+    if (matches.length > 0) {
+        status.innerHTML = `<div class="count-info">
+            Tìm thấy ${matches.length} tiêu chuẩn ${type} cho ống Ø${val}
+        </div>`;
+
+        matches.forEach(pipe => {
+            let thicknessRows = '';
+            Object.entries(pipe.thickness).forEach(([pn, t]) => {
+                thicknessRows += `<tr><td>${pn}</td><td>${t} mm</td></tr>`;
+            });
+
+            container.innerHTML += `
+            <div class="result-card">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <strong>Ø${pipe.OD_mm}${pipe.DKND_Inch ? " ("+pipe.DKND_Inch+")" : ""}</strong>
+                    <span class="std-badge">${pipe.Standard}</span>
+                </div>
+                <table>
+                    <thead><tr><th>Áp suất</th><th>Độ dày</th></tr></thead>
+                    <tbody>${thicknessRows}</tbody>
+                </table>
+            </div>`;
+        });
+    } else {
+        status.innerHTML = `<div class="error">
+            Không tìm thấy thông số cho Ø${val}
+        </div>`;
+    }
+}
+
+// Enter để tìm
+document.getElementById('odInput').addEventListener('keypress', e => {
+    if (e.key === 'Enter') lookupPipe();
+});
+</script>
+</body>
+</html>

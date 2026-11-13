@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Thông số DN - PN</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f9fafa;
+    color: #333;
+    padding: 20px;
+    max-width: 900px;
+    margin: auto;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 24px;
+    color: #004d99;
+  }
+  label {
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  select {
+    padding: 6px 10px;
+    margin-right: 20px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 24px;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px 10px;
+    text-align: center;
+    font-size: 14px;
+  }
+  th {
+    background-color: #004d99;
+    color: white;
+    position: sticky;
+    top: 0;
+  }
+  tr:nth-child(even) {background-color: #f2f7fb;}
+  .footer-note {
+    margin-top: 12px;
+    font-size: 12px;
+    font-style: italic;
+    color: #666;
+  }
+</style>
+</head>
+<body>
+
+<h1>Thông số kích thước Flange theo DN và PN</h1>
+
+<div>
+  <label for="pn-select">Chọn PN:</label>
+  <select id="pn-select">
+    <option value="10">PN 10</option>
+    <option value="16" selected>PN 16</option>
+  </select>
+
+  <label for="dn-select">Chọn DN:</label>
+  <select id="dn-select">
+    <!-- Options sẽ được tạo động -->
+  </select>
+</div>
+
+<table id="info-table">
+  <!-- Bảng thông số sẽ được tạo động -->
+</table>
+
+<div class="footer-note">
+  * Bảng thông số dựa trên tiêu chuẩn cung cấp.
+</div>
+
+<script>
+// Dữ liệu bảng PN16 lấy từ hình (chỉ lấy một vài dòng làm ví dụ, bạn có thể thêm đầy đủ)
+const pn16Data = {
+  "10": {D:90,K:60,L:14,Number:4,Size:"M12",B1:18,C1:14,C4:16,Gmax:"-"},
+  "15": {D:95,K:65,L:14,Number:4,Size:"M12",B1:22,C1:14,C4:16,Gmax:"-"},
+  "20": {D:105,K:75,L:14,Number:4,Size:"M12",B1:27.5,C1:16,C4:18,Gmax:"-"},
+  "25": {D:115,K:85,L:14,Number:4,Size:"M12",B1:34.5,C1:16,C4:18,Gmax:"-"},
+  "32": {D:140,K:100,L:18,Number:4,Size:"M16",B1:43.5,C1:18,C4:18,Gmax:"-"},
+  "40": {D:150,K:110,L:18,Number:4,Size:"M16",B1:49.5,C1:18,C4:18,Gmax:"-"},
+  "50": {D:165,K:125,L:18,Number:4,Size:"M16",B1:61.5,C1:20,C4:18,Gmax:"-"},
+  "65": {D:185,K:145,L:18,Number:"8b",Size:"M16",B1:77.5,C1:20,C4:18,Gmax:"55"},
+  "80": {D:200,K:160,L:18,Number:8,Size:"M16",B1:90.5,C1:20,C4:20,Gmax:"70"},
+  "100": {D:220,K:180,L:18,Number:8,Size:"M16",B1:116,C1:22,C4:20,Gmax:"90"},
+  "125": {D:250,K:210,L:18,Number:8,Size:"M16",B1:141.5,C1:22,C4:22,Gmax:"115"},
+  "150": {D:285,K:240,L:22,Number:8,Size:"M20",B1:170.5,C1:24,C4:22,Gmax:"140"},
+  "200": {D:340,K:295,L:22,Number:12,Size:"M20",B1:221.5,C1:26,C4:24,Gmax:"190"},
+  "250": {D:405,K:355,L:26,Number:12,Size:"M24",B1:276.5,C1:29,C4:26,Gmax:"235"},
+  "300": {D:460,K:410,L:26,Number:12,Size:"M24",B1:327.5,C1:32,C4:28,Gmax:"285"},
+  "350": {D:520,K:470,L:26,Number:16,Size:"M24",B1:359.5,C1:35,C4:30,Gmax:"330"}
+};
+// Dữ liệu giả định cho PN10 (ví dụ đơn giản)
+const pn10Data = {
+  "10": {D:90,K:60,L:14,Number:4,Size:"M12",B1:18,C1:14,C4:16,Gmax:"-"},
+  "15": {D:95,K:65,L:14,Number:4,Size:"M12",B1:22,C1:14,C4:16,Gmax:"-"},
+  "20": {D:105,K:75,L:14,Number:4,Size:"M12",B1:27.5,C1:16,C4:18,Gmax:"-"},
+  "25": {D:115,K:85,L:14,Number:4,Size:"M12",B1:34.5,C1:16,C4:18,Gmax:"-"},
+  "32": {D:140,K:100,L:18,Number:4,Size:"M16",B1:43.5,C1:18,C4:18,Gmax:"-"},
+  "40": {D:150,K:110,L:18,Number:4,Size:"M16",B1:49.5,C1:18,C4:18,Gmax:"-"},
+  "50": {D:165,K:125,L:18,Number:"8d",Size:"M16",B1:61.5,C1:20,C4:18,Gmax:"-"},
+  "65": {D:185,K:145,L:18,Number:8,Size:"M16",B1:77.5,C1:20,C4:18,Gmax:"55"},
+  "80": {D:200,K:160,L:18,Number:8,Size:"M16",B1:90.5,C1:20,C4:20,Gmax:"70"},
+  "100": {D:220,K:180,L:18,Number:8,Size:"M16",B1:116,C1:22,C4:20,Gmax:"90"},
+  "125": {D:250,K:210,L:18,Number:8,Size:"M16",B1:141.5,C1:22,C4:22,Gmax:"115"},
+  "150": {D:285,K:240,L:22,Number:8,Size:"M20",B1:170.5,C1:24,C4:22,Gmax:"140"},
+  "200": {D:340,K:295,L:22,Number:8,Size:"M20",B1:221.5,C1:24,C4:24,Gmax:"190"},
+  "250": {D:395,K:350,L:22,Number:12,Size:"M20",B1:276.5,C1:26,C4:26,Gmax:"235"},
+  "300": {D:445,K:400,L:22,Number:12,Size:"M20",B1:327.5,C1:26,C4:26,Gmax:"285"},
+  "350": {D:505,K:460,L:22,Number:16,Size:"M20",B1:359.5,C1:26,C4:26,Gmax:"330"}
+};
+// Danh sách trường thông số để hiển thị theo thứ tự và tên
+const fields = [
+  {key:"D", label:"Đường kính ngoài mặt bích (D) - Diameter of outside circle"},
+  {key:"K", label:"Đường kính tâm lỗ bu lông (K) - Pitch circle diameter"},
+  {key:"L", label:"Đường kính lỗ bu lông (L) - Bolt hole diameter"},
+  {key:"Number", label:"Số lượng lỗ bu lông - Number of bolts"},
+  {key:"Size", label:"Kích cỡ bu lông - Bolt size"},
+  {key:"B1", label:"Đường kính trong / lỗ thoát (B1) - Bore diameter"},
+  {key:"C1", label:"Độ dày mặt bích (C1) - Flange thickness"},
+  {key:"C4", label:"Độ dày bích đặc / bích mù (C4) - Blind flange thickness"},
+  {key:"Gmax", label:"Đường kính phần tâm bích đặc (Gmax) - Centre portion"}
+];
+// Lấy phần tử select và table
+const pnSelect = document.getElementById('pn-select');
+const dnSelect = document.getElementById('dn-select');
+const infoTable = document.getElementById('info-table');
+
+// Hàm cập nhật danh sách DN dựa vào PN
+function updateDnOptions() {
+  const pn = pnSelect.value;
+  const data = pn === "16" ? pn16Data : pn10Data;
+  dnSelect.innerHTML = '';
+  Object.keys(data).forEach(dn => {
+    const option = document.createElement('option');
+    option.value = dn;
+    option.textContent = dn;
+    dnSelect.appendChild(option);
+  });
+}
+
+// Hàm hiển thị bảng thông số
+function displayInfo() {
+  const pn = pnSelect.value;
+  const dn = dnSelect.value;
+  const data = pn === "16" ? pn16Data : pn10Data;
+  const info = data[dn];
+  if (!info) {
+    infoTable.innerHTML = "<tr><td colspan='3'>Không có dữ liệu cho lựa chọn này.</td></tr>";
+    return;
+  }
+  let html = `<thead><tr><th>Thông số</th><th>Ký hiệu</th><th>Giá trị (mm)</th></tr></thead><tbody>`;
+  fields.forEach(f => {
+    if(info[f.key] !== undefined) {
+      html += `<tr><td>${f.label}</td><td>${f.key}</td><td>${info[f.key]}</td></tr>`;
+    }
+  });
+  html += '</tbody>';
+  infoTable.innerHTML = html;
+}
+
+// Event listeners
+pnSelect.addEventListener('change', () => {
+  updateDnOptions();
+  displayInfo();
+});
+
+dnSelect.addEventListener('change', displayInfo);
+
+// Khởi tạo lần đầu
+updateDnOptions();
+displayInfo();
+
+</script>
+
+</body>
+</html>

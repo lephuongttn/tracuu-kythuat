@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tra Cứu Thông Số Ống</title>
+
+<style>
+:root{
+    --primary:#2f5d8a;
+    --border:#d0d7de;
+    --bg:#f3f5f7;
+    --card:#ffffff;
+}
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    min-height:100vh;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background:var(--bg);
+    display:flex;
+	justify-content:center;
+    align-items:flex-start;   /* ⬅ ĐƯA LÊN TRÊN */
+    padding-top:24px;         /* ⬅ CHỪA KHOẢNG CÁCH TRÊN */
+    color:#333;
+}
+
+.container{
+    width:100%;
+    max-width:520px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:18px 20px 20px;
+}
+
+h2{
+    margin:0 0 12px;
+    font-size:20px;
+    color:var(--primary);
+    text-align:center;
+}
+
+.desc{
+    font-size:14px;
+    margin-bottom:14px;
+    color:#555;
+    text-align:center;
+}
+
+label{
+    font-weight:600;
+    font-size:14px;
+    margin-bottom:6px;
+    display:block;
+}
+
+select{
+    width:100%;
+    padding:9px 10px;
+    font-size:15px;
+    border:1px solid var(--border);
+    border-radius:6px;
+    background:#fff;
+}
+
+select:focus{
+    outline:none;
+    border-color:var(--primary);
+}
+
+.result-box{
+    margin-top:16px;
+    padding:14px;
+    border:1px solid var(--border);
+    border-radius:6px;
+    background:#fafafa;
+}
+
+.result-box h4{
+    margin:0 0 10px;
+    font-size:16px;
+    color:#222;
+    border-bottom:1px solid var(--border);
+    padding-bottom:6px;
+}
+
+.table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:14px;
+}
+
+.table td{
+    padding:6px 4px;
+    border-bottom:1px dashed #ddd;
+}
+
+.table td:first-child{
+    font-weight:600;
+    width:55%;
+}
+
+.error{
+    color:#c62828;
+    font-weight:600;
+    font-size:14px;
+    text-align:center;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+    <h2>📐 Tra Cứu Thông Số Ống</h2>
+    <div class="desc">
+        Chọn đường kính danh định DN để xem thông số kỹ thuật tương ứng
+    </div>
+
+    <label for="dnSelector">Đường kính danh định (DN – mm)</label>
+    <select id="dnSelector" onchange="lookupPipeInfo()">
+        <option value="">-- Chọn DN --</option>
+    </select>
+
+    <div class="result-box" id="resultArea"></div>
+</div>
+
+<script>
+const pipeData = [
+  { DN: 6, NPS: '1/8', OD: '10.29', PPR: '-', HDPE: '-', Thep: '6A', PVC: '-' },
+  { DN: 8, NPS: '1/4', OD: '13.72', PPR: '-', HDPE: '-', Thep: '8A', PVC: '-' },
+  { DN: 10, NPS: '3/8', OD: '17.15', PPR: '-', HDPE: '-', Thep: '10A', PVC: '-' },
+  { DN: 15, NPS: '1/2', OD: '21.34', PPR: '20', HDPE: '20', Thep: '15A', PVC: '21' },
+  { DN: 20, NPS: '3/4', OD: '26.67', PPR: '25', HDPE: '25', Thep: '20A', PVC: '27' },
+  { DN: 25, NPS: '1', OD: '33.40', PPR: '32', HDPE: '32', Thep: '25A', PVC: '34' },
+  { DN: 32, NPS: '1 1/4', OD: '42.16', PPR: '40', HDPE: '40', Thep: '32A', PVC: '42' },
+  { DN: 40, NPS: '1 1/2', OD: '48.26', PPR: '50', HDPE: '50', Thep: '40A', PVC: '48 (49)' },
+  { DN: 50, NPS: '2', OD: '60.33', PPR: '63', HDPE: '63', Thep: '50A', PVC: '60' },
+  { DN: 65, NPS: '2 1/2', OD: '73.03', PPR: '75', HDPE: '75', Thep: '65A', PVC: '75 (76)' },
+  { DN: 80, NPS: '3', OD: '88.90', PPR: '90', HDPE: '90', Thep: '80A', PVC: '90' },
+  { DN: 90, NPS: '3 1/2', OD: '101.60', PPR: '-', HDPE: '-', Thep: '90A', PVC: '-' },
+  { DN: 100, NPS: '4', OD: '114.30', PPR: '110', HDPE: '110', Thep: '100A', PVC: '110 (114)' },
+  { DN: 125, NPS: '5', OD: '141.30', PPR: '125 (140)', HDPE: '125 (140)', Thep: '125A', PVC: '140' },
+  { DN: 150, NPS: '6', OD: '168.28', PPR: '160', HDPE: '160', Thep: '150A', PVC: '160 (168)' },
+  { DN: 200, NPS: '8', OD: '219.08', PPR: '200 (225)', HDPE: '200 (225)', Thep: '200A', PVC: '225 (220)' },
+  { DN: 250, NPS: '10', OD: '273.05', PPR: '250', HDPE: '250 (280)', Thep: '250A', PVC: '250 (280)' },
+  { DN: 300, NPS: '12', OD: '323.85', PPR: '315', HDPE: '315', Thep: '300A', PVC: '315' },
+  { DN: 350, NPS: '14', OD: '355.60', PPR: '-', HDPE: '355', Thep: '350A', PVC: '355' },
+  { DN: 400, NPS: '16', OD: '406.40', PPR: '-', HDPE: '400', Thep: '400A', PVC: '400' },
+  { DN: 450, NPS: '18', OD: '457.20', PPR: '-', HDPE: '450', Thep: '450A', PVC: '450' },
+  { DN: 500, NPS: '20', OD: '508.00', PPR: '-', HDPE: '500', Thep: '500A', PVC: '500' },
+  { DN: 600, NPS: '24', OD: '609.60', PPR: '-', HDPE: '630', Thep: '600A', PVC: '630' },
+  { DN: 700, NPS: '28', OD: '711.20', PPR: '-', HDPE: '710', Thep: '700A', PVC: '710' },
+  { DN: 800, NPS: '32', OD: '812.80', PPR: '-', HDPE: '800', Thep: '800A', PVC: '800' }
+];
+function populateDNSelector(){
+    const select=document.getElementById("dnSelector");
+    pipeData.forEach(p=>{
+        const opt=document.createElement("option");
+        opt.value=p.DN;
+        opt.textContent=`DN ${p.DN}`;
+        select.appendChild(opt);
+    });
+}
+
+function lookupPipeInfo(){
+    const dn=document.getElementById("dnSelector").value;
+    const box=document.getElementById("resultArea");
+    box.innerHTML="";
+
+    if(!dn){
+        box.innerHTML='<div class="error">Vui lòng chọn DN</div>';
+        return;
+    }
+
+    const p=pipeData.find(x=>x.DN==dn);
+    if(!p){
+        box.innerHTML='<div class="error">Không có dữ liệu</div>';
+        return;
+    }
+
+    box.innerHTML=`
+        <h4>DN ${p.DN} – Thông số kỹ thuật</h4>
+        <table class="table">
+            <tr><td>NPS (inch)</td><td>${p.NPS}</td></tr>
+            <tr><td>Đường kính ngoài OD (mm)</td><td>${p.OD}</td></tr>
+            <tr><td>Ống PPR (Ø)</td><td>${p.PPR}</td></tr>
+            <tr><td>Ống HDPE (Ø)</td><td>${p.HDPE}</td></tr>
+            <tr><td>Ống thép</td><td>${p.Thep}</td></tr>
+            <tr><td>Ống PVC (Ø)</td><td>${p.PVC}</td></tr>
+        </table>
+    `;
+}
+
+populateDNSelector();
+</script>
+</body>
+</html>

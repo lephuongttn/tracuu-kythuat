@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tra Cứu Quy Chuẩn Đào Mương & Chôn Ống - 2026</title>
+
+<style>
+:root{
+    --primary:#0369a1;
+    --primary-soft:#e0f2fe;
+    --bg:#f8fafc;
+    --border:#cbd5e1;
+    --text:#0f172a;
+    --accent:#0891b2;
+}
+*{ box-sizing:border-box; }
+body{
+    margin:0; min-height:100vh;
+    font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+    background:var(--bg); display:flex; justify-content:center; align-items:flex-start;
+    padding:16px; color:var(--text);
+}
+.container{
+    width:100%; max-width:600px;
+    background:#fff; border:1px solid var(--border);
+    border-radius:12px; padding:15px 20px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+.header{ text-align:center; margin-bottom:12px; border-bottom: 2px solid var(--primary-soft); padding-bottom: 8px; }
+.header h2{ margin:0; font-size:18px; color:var(--primary); text-transform: uppercase; }
+.header .sub{ font-size:12px; color:#64748b; }
+.input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.full-width { grid-column: span 2; }
+.field-group { display: flex; flex-direction: column; gap: 3px; }
+label { font-size: 12px; font-weight: 600; color: #475569; }
+select, input { padding: 6px 10px; font-size: 14px; border: 1px solid var(--border); border-radius: 6px; background: #fff; height: 36px; }
+.search-action { margin-top: 5px; text-align: center; }
+button { background: var(--primary); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; font-size: 14px; }
+button:hover { background: var(--accent); }
+#resultsContainer { margin-top: 15px; }
+.result-card { border: 2px solid var(--primary-soft); border-radius: 10px; padding: 12px; background: #fff; }
+.data-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; border-bottom: 1px dashed #e2e8f0; }
+.val { font-weight: 700; color: #0369a1; }
+.note-box { margin-top: 10px; padding: 8px; background: #fefce8; border-left: 4px solid #eab308; font-size: 12px; color: #854d0e; }
+.error-box { color:#b91c1c; background:#fee2e2; padding:15px; border-radius:10px; border:1px solid #f87171; font-size:14px; line-height:1.5; margin-top:10px; }
+</style>
+</head>
+
+<body>
+<div class="container">
+    <div class="header">
+        <h2>🏗️ Tính Toán Đào Mương & Chôn Ống</h2>
+        <div class="sub">QCVN 07:1:2023/BXD & TCVN 4447:2012/BXD</div>
+    </div>
+
+    <div class="input-grid">
+        <div class="field-group full-width">
+            <label>Đường kính ngoài ống (D - mm)</label>
+            <input type="number" id="odInput" placeholder="VD: 110, 315, 700...">
+        </div>
+        <div class="field-group">
+            <label>Vị trí lắp đặt</label>
+            <select id="locationType">
+                <option value="normal">Dưới lòng đường</option>
+                <option value="sidewalk">Vỉa hè / Bảo vệ</option>
+            </select>
+        </div>
+        <div class="field-group">
+            <label>Cách thức lắp</label>
+            <select id="installMethod">
+                <option value="single">Lắp từng đoạn</option>
+                <option value="cluster">Lắp theo cụm</option>
+            </select>
+        </div>
+        <div class="field-group full-width">
+            <label>Loại vật liệu ống</label>
+            <select id="pipeMaterial">
+                <option value="steel_plastic">Thép, HDPE, uPVC</option>
+                <option value="cast_iron">Gang, BTCT</option>
+                <option value="concrete_socket">Bê tông ngàm, Sành</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="search-action">
+        <button onclick="calculatePipeSpecs()">TRA CỨU THÔNG SỐ</button>
+    </div>
+
+    <div id="resultsContainer"></div>
+</div>
+
+<script>
+function calculatePipeSpecs() {
+    const od_mm = parseFloat(document.getElementById('odInput').value);
+    const location = document.getElementById('locationType').value;
+    const method = document.getElementById('installMethod').value;
+    const material = document.getElementById('pipeMaterial').value;
+    const container = document.getElementById('resultsContainer');
+
+    if (!od_mm || od_mm <= 0) {
+        container.innerHTML = '<div style="color:red; text-align:center; font-size:14px; margin-top:10px;">Vui lòng nhập OD hợp lệ!</div>';
+        return;
+    }
+
+    const D_m = od_mm / 1000;
+    
+    // KIỂM TRA ĐIỀU KIỆN KHI CHỌN "LẮP THEO CỤM"
+    if (method === 'cluster') {
+        // 1. Kiểm tra Đường kính (D >= 0.7m)
+        if (D_m >= 0.7) {
+            container.innerHTML = `
+                <div class="error-box">
+                    <strong>⚠️ CẢNH BÁO QUY CÁCH:</strong><br>
+                    Đường kính D = ${D_m}m (≥ 0.7m) không được phép lắp theo cụm.<br>
+                    Vui lòng chọn <strong>"Lắp từng đoạn"</strong> và thực hiện lại.
+                </div>`;
+            return;
+        }
+        
+        // 2. Kiểm tra Vật liệu (Nếu không phải Thép/HDPE/uPVC)
+        if (material !== 'steel_plastic') {
+            container.innerHTML = `
+                <div class="error-box">
+                    <strong>⚠️ CẢNH BÁO QUY CÁCH:</strong><br>
+                    Không được phép chọn loại vật liệu Gang hoặc Bê tông ngàm/Sành khi lắp theo cụm.<br>
+                    Vui lòng chọn vật liệu <strong>Thép, HDPE, uPVC</strong> hoặc chuyển sang <strong>"Lắp từng đoạn"</strong>.
+                </div>`;
+            return;
+        }
+    }
+
+    // NẾU CHỌN "LẮP TỪNG ĐOẠN" HOẶC "LẮP CỤM ĐÚNG QUY CÁCH", TIẾP TỤC TÍNH TOÁN
+    let depth = od_mm <= 300 ? 0.7 : 1.0;
+    let width = 0;
+    let note = "";
+
+    // Tính độ sâu tối thiểu
+    if (location === 'sidewalk') {
+        depth = Math.max(0.5, depth - 0.3);
+        if (depth === 0.5) note = "Đã điều chỉnh độ sâu về tối thiểu 0.5m theo quy định vỉa hè.";
+    }
+
+    // Tính bề rộng đáy mương
+    if (method === 'cluster') {
+        // Công thức cho cụm: D + 0.3 nhưng không nhỏ hơn 0.7
+        width = Math.max(0.7, D_m + 0.3);
+        
+        // Bổ sung ghi chú nếu phải điều chỉnh về 0.7m
+        if (width === 0.7 && (D_m + 0.3) < 0.7) {
+            note += (note ? "<br>" : "") + "Bề rộng đáy mương đã điều chỉnh về tối thiểu 0.7m.";
+        }
+    } else {
+        // Công thức lắp từng đoạn (TCVN 4447:2012)
+        if (D_m < 0.5) {
+            width = material === 'steel_plastic' ? D_m + 0.5 : (material === 'cast_iron' ? D_m + 0.6 : D_m + 0.8);
+        } else if (D_m < 1.6) {
+            width = material === 'steel_plastic' ? D_m + 0.8 : (material === 'cast_iron' ? D_m + 1.0 : D_m + 1.2);
+        } else {
+            width = D_m + 1.4;
+        }
+    }
+    container.innerHTML = `
+        <div class="result-card">
+            <div class="data-row"><span>Độ sâu chôn ống tối thiểu:</span><span class="val">${depth.toFixed(1)} m</span></div>
+            <div class="data-row"><span>Bề rộng đáy mương (B):</span><span class="val">${width.toFixed(3)} m</span></div>
+            <div class="data-row"><span>Hở lưu không (mỗi bên):</span><span class="val">${((width - D_m)/2).toFixed(3)} m</span></div>
+            ${note ? `<div class="note-box">${note}</div>` : ''}
+        </div>`;
+}
+</script>
+</body>
+</html>
